@@ -1,3 +1,7 @@
+const isNil = (val) => val === null || val === undefined;
+
+const isNotNil = (val) => !isNil(val);
+
 const countries = Object.fromEntries([
   ["Afghanistan", "AF"],
   ["Åland Islands", "AX"],
@@ -245,26 +249,24 @@ const countries = Object.fromEntries([
   ["Zimbabwe", "ZW"],
 ]);
 
-const fields = {
+const FIELDS = {
   country: "country",
 };
 
-const isNil = (val) => val === null || val === undefined;
-
-const isNotNil = (val) => !isNil(val);
-
 module.exports = async ({ recordBatch, _session, _logger }) => {
-  recordBatch.records.forEach((record) => {
-    const { country: countryName } = record.value;
+  return Promise.all(
+    await recordBatch.records.forEach((record) => {
+      const { country: countryName } = record.value;
 
-    if (isNotNil(countryName)) {
-      const countryCode = countries[countryName.toLowerCase()];
+      if (isNotNil(countryName)) {
+        const countryCode = countries[countryName.toLowerCase()];
 
-      if (isNotNil(countryCode)) {
-        record
-          .set(fields.country, countryCode)
-          .addComment(fields.country, "Country was automatically formatted");
+        if (isNotNil(countryCode)) {
+          record
+            .set(FIELDS.country, countryCode)
+            .addComment(FIELDS.country, "Country was automatically formatted");
+        }
       }
-    }
-  });
+    }),
+  );
 };

@@ -1,17 +1,17 @@
 const dfns = require("date-fns");
 
-const fields = {
-  date: "date",
-};
-
 const isNil = (val) => val === null || val === undefined;
 
 const isNotNil = (val) => !isNil(val);
 
+const FIELDS = {
+  date: "date",
+};
+
 module.exports = async ({ recordBatch, _session, logger }) => {
   return Promise.all(
     await recordBatch.records.map((record) => {
-      Object.keys(fields).forEach((field) => {
+      Object.keys(FIELDS).forEach((field) => {
         const { date: dateValue } = record.get(field);
 
         if (isNotNil(dateValue)) {
@@ -20,14 +20,14 @@ module.exports = async ({ recordBatch, _session, logger }) => {
             const realDate = dfns.parseISO(thisDate);
 
             if (dfns.isDate(realDate)) {
-              record.set(fields.date, thisDate).addComment(fields.date, "Automatically formatted");
+              record.set(FIELDS.date, thisDate).addComment(FIELDS.date, "Automatically formatted");
 
               if (dfns.isFuture(realDate)) {
-                record.addError(fields.date, "Date cannot be in the future");
+                record.addError(FIELDS.date, "Date cannot be in the future");
               }
             }
           } else {
-            record.addError(fields.date, "Invalid date");
+            record.addError(FIELDS.date, "Invalid date");
             logger.error("Invalid date");
           }
         }
