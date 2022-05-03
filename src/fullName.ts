@@ -1,18 +1,18 @@
+const fields = {
+  firstName: "firstName",
+  lastName: "lastName",
+};
+
+const isNil = (val) => val === null || val === undefined;
+
+const isNotNil = (val) => !isNil(val);
+
 module.exports = async ({ recordBatch, _session, _logger }) => {
-  const fields = {
-    firstName: "firstName",
-    lastName: "lastName",
-  };
-
-  const isNil = (val) => val === null || val === undefined;
-
-  const isNotNil = (val) => !isNil(val);
-
   await Promise.all(
     await recordBatch.records.map(async (record) => {
       const { firstName, lastName } = record.value;
 
-      if (firstName && isNotNil(lastName)) {
+      if (isNotNil(firstName) && isNotNil(lastName)) {
         if (firstName.includes(" ")) {
           const substrings = firstName.split(" ");
 
