@@ -19,7 +19,7 @@ module.exports = async ({ recordBatch, _session, _logger }) => {
           .set(FIELDS.firstName, parts[0])
           .addComment(FIELDS.firstName, "Full name was split");
         record
-          .set(FIELDS.lastName, parts.slice(1, parts.length).join(" "))
+          .set(FIELDS.lastName, parts.slice(1, parts.length).join(" ").trim())
           .addComment(FIELDS.lastName, "Full name was split");
       }
     }
