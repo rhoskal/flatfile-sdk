@@ -254,19 +254,17 @@ const FIELDS = {
 };
 
 module.exports = async ({ recordBatch, _session, _logger }) => {
-  return Promise.all(
-    await recordBatch.records.forEach((record) => {
-      const { country: countryName } = record.value;
+  return recordBatch.records.forEach((record) => {
+    const { country: countryName } = record.value;
 
-      if (isNotNil(countryName)) {
-        const countryCode = countries[countryName.toLowerCase()];
+    if (isNotNil(countryName)) {
+      const countryCode = countries[countryName.toLowerCase()];
 
-        if (isNotNil(countryCode)) {
-          record
-            .set(FIELDS.country, countryCode)
-            .addComment(FIELDS.country, "Country was automatically formatted");
-        }
+      if (isNotNil(countryCode)) {
+        record
+          .set(FIELDS.country, countryCode)
+          .addComment(FIELDS.country, "Country was automatically formatted");
       }
-    }),
-  );
+    }
+  });
 };
