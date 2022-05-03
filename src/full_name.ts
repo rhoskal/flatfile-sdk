@@ -13,13 +13,13 @@ module.exports = async ({ recordBatch, _session, _logger }) => {
 
     if (isNotNil(firstName) && isNotNil(lastName)) {
       if (firstName.includes(" ")) {
-        const substrings = firstName.split(" ");
+        const parts = firstName.split(" ");
 
         record
-          .set(FIELDS.firstName, substrings[0])
+          .set(FIELDS.firstName, parts[0])
           .addComment(FIELDS.firstName, "Full name was split");
         record
-          .set(FIELDS.lastName, substrings.join(" "))
+          .set(FIELDS.lastName, parts.slice(1, parts.length).join(" "))
           .addComment(FIELDS.lastName, "Full name was split");
       }
     }
