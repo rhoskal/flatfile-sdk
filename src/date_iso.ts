@@ -8,7 +8,7 @@ const FIELDS = {
   date: "date",
 };
 
-module.exports = async ({ recordBatch, _session, logger }) => {
+export default async ({ recordBatch, _session, logger }) => {
   return recordBatch.records.map((record) => {
     Object.keys(FIELDS).forEach((field) => {
       const { date: dateValue } = record.get(field);
@@ -19,7 +19,9 @@ module.exports = async ({ recordBatch, _session, logger }) => {
           const realDate = dfns.parseISO(thisDate);
 
           if (dfns.isDate(realDate)) {
-            record.set(FIELDS.date, thisDate).addComment(FIELDS.date, "Automatically formatted");
+            record
+              .set(FIELDS.date, thisDate)
+              .addComment(FIELDS.date, "Automatically formatted");
 
             if (dfns.isFuture(realDate)) {
               record.addError(FIELDS.date, "Date cannot be in the future");

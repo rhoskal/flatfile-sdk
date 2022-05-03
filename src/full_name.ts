@@ -7,7 +7,7 @@ const FIELDS = {
   lastName: "lastName",
 };
 
-module.exports = async ({ recordBatch, _session, _logger }) => {
+export default async ({ recordBatch, _session, _logger }) => {
   return recordBatch.records.map((record) => {
     const { firstName, lastName } = record.value;
 
