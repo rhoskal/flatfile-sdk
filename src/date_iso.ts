@@ -20,7 +20,7 @@ const FIELDS = {
   date: "date",
 };
 
-export default async ({ recordBatch, _session, logger }) => {
+module.exports = async ({ recordBatch, _session, logger }) => {
   return recordBatch.records.map((record) => {
     Object.keys(FIELDS).forEach((field) => {
       const { date: dateValue } = record.get(field);

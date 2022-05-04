@@ -265,7 +265,7 @@ const FIELDS = {
   country: "country",
 };
 
-export default async ({ recordBatch, _session, _logger }) => {
+module.exports = async ({ recordBatch, _session, _logger }) => {
   return recordBatch.records.map((record) => {
     const { country: countryName } = record.value;
 
