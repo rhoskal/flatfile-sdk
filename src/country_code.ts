@@ -1,5 +1,17 @@
+/**
+ * Helper function to determine if a value is null or undefined.
+ * Useful in if/else statments or ternaries.
+ *
+ * @param {*} val - Any object/value
+ */
 const isNil = (val) => val === null || val === undefined;
 
+/**
+ * Helper function to determine if a value is NOT null or undefined.
+ * Useful in if/else statments or ternaries.
+ *
+ * @param {*} val - Any object/value
+ */
 const isNotNil = (val) => !isNil(val);
 
 const countries = Object.fromEntries([
@@ -254,7 +266,7 @@ const FIELDS = {
 };
 
 export default async ({ recordBatch, _session, _logger }) => {
-  return recordBatch.records.forEach((record) => {
+  return recordBatch.records.map((record) => {
     const { country: countryName } = record.value;
 
     if (isNotNil(countryName)) {

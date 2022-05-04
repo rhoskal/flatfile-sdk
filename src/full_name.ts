@@ -1,5 +1,17 @@
+/**
+ * Helper function to determine if a value is null or undefined.
+ * Useful in if/else statments or ternaries.
+ *
+ * @param {*} val - Any object/value
+ */
 const isNil = (val) => val === null || val === undefined;
 
+/**
+ * Helper function to determine if a value is NOT null or undefined.
+ * Useful in if/else statments or ternaries.
+ *
+ * @param {*} val - Any object/value
+ */
 const isNotNil = (val) => !isNil(val);
 
 const FIELDS = {
