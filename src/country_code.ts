@@ -4,7 +4,7 @@
  *
  * @param {*} val - Any object/value
  */
-const isNil = (val) => val === null || val === undefined;
+const isNil = (val) => val === null || val === undefined || val === "";
 
 /**
  * Helper function to determine if a value is NOT null or undefined.
