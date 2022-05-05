@@ -16,10 +16,6 @@ const isNil = (val) => val === null || val === undefined || val === "";
  */
 const isNotNil = (val) => !isNil(val);
 
-const FIELDS = {
-  date: "date",
-};
-
 module.exports = async ({ recordBatch, _session, logger }) => {
   return recordBatch.records.map((record) => {
     const { date } = record.value;
@@ -31,15 +27,15 @@ module.exports = async ({ recordBatch, _session, logger }) => {
 
         if (dfns.isDate(realDate)) {
           record
-            .set(FIELDS.date, thisDate)
-            .addComment(FIELDS.date, "Automatically formatted");
+            .set("date", thisDate)
+            .addComment("date", "Automatically formatted");
 
           if (dfns.isFuture(realDate)) {
-            record.addWarning(FIELDS.date, "Date is in the future");
+            record.addWarning("date", "Date is in the future");
           }
         }
       } else {
-        record.addError(FIELDS.date, "Invalid date");
+        record.addError("date", "Invalid date");
         logger.error("Invalid date");
       }
     }
