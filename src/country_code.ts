@@ -65,7 +65,7 @@ const countries = new Map([
   ["Colombia".toLowerCase(), "CO"],
   ["Comoros".toLowerCase(), "KM"],
   ["Congo".toLowerCase(), "CG"],
-  ["Congo.toLowerCase(), The Democratic Republic of the", "CD"],
+  ["Congo, The Democratic Republic of the".toLowerCase(), "CD"],
   ["Cook Islands".toLowerCase(), "CK"],
   ["Costa Rica".toLowerCase(), "CR"],
   ["Cote D'Ivoire".toLowerCase(), "CI"],
@@ -117,7 +117,7 @@ const countries = new Map([
   ["Iceland".toLowerCase(), "IS"],
   ["India".toLowerCase(), "IN"],
   ["Indonesia".toLowerCase(), "ID"],
-  ["Iran.toLowerCase(), Islamic Republic Of", "IR"],
+  ["Iran, Islamic Republic Of".toLowerCase(), "IR"],
   ["Iraq".toLowerCase(), "IQ"],
   ["Ireland".toLowerCase(), "IE"],
   ["Isle of Man".toLowerCase(), "IM"],
@@ -130,8 +130,8 @@ const countries = new Map([
   ["Kazakhstan".toLowerCase(), "KZ"],
   ["Kenya".toLowerCase(), "KE"],
   ["Kiribati".toLowerCase(), "KI"],
-  ["Korea.toLowerCase(), Democratic People'S Republic of", "KP"],
-  ["Korea.toLowerCase(), Republic of", "KR"],
+  ["Korea, Democratic People'S Republic of".toLowerCase(), "KP"],
+  ["Korea, Republic of".toLowerCase(), "KR"],
   ["Kuwait".toLowerCase(), "KW"],
   ["Kyrgyzstan".toLowerCase(), "KG"],
   ["Lao People'S Democratic Republic".toLowerCase(), "LA"],
@@ -157,8 +157,8 @@ const countries = new Map([
   ["Mauritius".toLowerCase(), "MU"],
   ["Mayotte".toLowerCase(), "YT"],
   ["Mexico".toLowerCase(), "MX"],
-  ["Micronesia.toLowerCase(), Federated States of", "FM"],
-  ["Moldova.toLowerCase(), Republic of", "MD"],
+  ["Micronesia, Federated States of".toLowerCase(), "FM"],
+  ["Moldova, Republic of".toLowerCase(), "MD"],
   ["Monaco".toLowerCase(), "MC"],
   ["Mongolia".toLowerCase(), "MN"],
   ["Montserrat".toLowerCase(), "MS"],
@@ -182,7 +182,7 @@ const countries = new Map([
   ["Oman".toLowerCase(), "OM"],
   ["Pakistan".toLowerCase(), "PK"],
   ["Palau".toLowerCase(), "PW"],
-  ["Palestinian Territory.toLowerCase(), Occupied", "PS"],
+  ["Palestinian Territory, Occupied".toLowerCase(), "PS"],
   ["Panama".toLowerCase(), "PA"],
   ["Papua New Guinea".toLowerCase(), "PG"],
   ["Paraguay".toLowerCase(), "PY"],
@@ -226,9 +226,9 @@ const countries = new Map([
   ["Sweden".toLowerCase(), "SE"],
   ["Switzerland".toLowerCase(), "CH"],
   ["Syrian Arab Republic".toLowerCase(), "SY"],
-  ["Taiwan.toLowerCase(), Province of China", "TW"],
+  ["Taiwan, Province of China".toLowerCase(), "TW"],
   ["Tajikistan".toLowerCase(), "TJ"],
-  ["Tanzania.toLowerCase(), United Republic of", "TZ"],
+  ["Tanzania, United Republic of".toLowerCase(), "TZ"],
   ["Thailand".toLowerCase(), "TH"],
   ["Timor-Leste".toLowerCase(), "TL"],
   ["Togo".toLowerCase(), "TG"],
@@ -252,18 +252,14 @@ const countries = new Map([
   ["Vanuatu".toLowerCase(), "VU"],
   ["Venezuela".toLowerCase(), "VE"],
   ["Viet Nam".toLowerCase(), "VN"],
-  ["Virgin Islands.toLowerCase(), British", "VG"],
-  ["Virgin Islands.toLowerCase(), U.S.", "VI"],
+  ["Virgin Islands, British".toLowerCase(), "VG"],
+  ["Virgin Islands, U.S.".toLowerCase(), "VI"],
   ["Wallis and Futuna".toLowerCase(), "WF"],
   ["Western Sahara".toLowerCase(), "EH"],
   ["Yemen".toLowerCase(), "YE"],
   ["Zambia".toLowerCase(), "ZM"],
   ["Zimbabwe".toLowerCase(), "ZW"],
 ]);
-
-const FIELDS = {
-  country: "country",
-};
 
 module.exports = async ({ recordBatch, _session, _logger }) => {
   return recordBatch.records.map((record) => {
@@ -274,8 +270,8 @@ module.exports = async ({ recordBatch, _session, _logger }) => {
 
       if (isNotNil(countryCode)) {
         record
-          .set(FIELDS.country, countryCode)
-          .addComment(FIELDS.country, "Country was automatically formatted");
+          .set("country", countryCode)
+          .addComment("country", "Country was automatically formatted");
       }
     }
   });
