@@ -6,7 +6,7 @@ const dfns = require("date-fns");
  *
  * @param {*} val - Any object/value
  */
-const isNil = (val) => val === null || val === undefined;
+const isNil = (val) => val === null || val === undefined || val === "";
 
 /**
  * Helper function to determine if a value is NOT null or undefined.
@@ -18,12 +18,14 @@ const isNotNil = (val) => !isNil(val);
 
 const FIELDS = {
   date: "date",
+  // modified_at: "modifiedAt",
+  // created_at: "createdAt",
 };
 
 module.exports = async ({ recordBatch, _session, logger }) => {
   return recordBatch.records.map((record) => {
     Object.keys(FIELDS).forEach((field) => {
-      const { date: dateValue } = record.get(field);
+      const dateValue = record.get(FIELDS[field]);
 
       if (isNotNil(dateValue)) {
         if (Date.parse(dateValue)) {
@@ -32,18 +34,36 @@ module.exports = async ({ recordBatch, _session, logger }) => {
 
           if (dfns.isDate(realDate)) {
             record
-              .set(FIELDS.date, thisDate)
-              .addComment(FIELDS.date, "Automatically formatted");
+              .set(FIELDS[field], thisDate)
+              .addComment(FIELDS[field], "Automatically formatted");
 
             if (dfns.isFuture(realDate)) {
-              record.addError(FIELDS.date, "Date cannot be in the future");
+              record.addError(FIELDS[field], "Date cannot be in the future");
             }
           }
         } else {
-          record.addError(FIELDS.date, "Invalid date");
+          record.addError(FIELDS[field], "Invalid date");
           logger.error("Invalid date");
         }
       }
     });
+  });
+};
+
+module.exports = async ({ recordBatch, _session, logger }) => {
+  return recordBatch.records.map((record) => {
+    const { date, modifiedAt, createdAt } = record.value;
+
+    if (isNotNil(date)) {
+      convertToISO(date);
+    }
+
+    if (isNotNil(modifiedAt)) {
+      convertToISO(modifiedAt);
+    }
+
+    if (isNotNil(createdAt)) {
+      convertToISO(createdAt);
+    }
   });
 };

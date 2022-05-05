@@ -14,3 +14,10 @@
 - Why does deploying a new version of my Hooks delete all my test data?
 - Why do I have re-deploy just to test changes?
 - How can prevent "bad states" from happening BEFORE the execute? Need more feeback on actual issue
+- Deploying reloads the page and causes my position in my code to reset back to defaults
+- This doesn't work... logger.info("firstName", firstName); --> has to be logger.info(firstName);
+- What if we had a GitHub repo with examples? Easy to keep up to day and easy to show variations of a theme. e.g. 1 date vs multiple dates
+- Is there a way to run these cloud functions locally? It would speed up dev time.
+
+- A few times I was running code on test data with the logger but the logs never showed up and there was no error/status
+  - no warning of missing dependency
