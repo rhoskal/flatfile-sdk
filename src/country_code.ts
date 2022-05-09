@@ -263,7 +263,7 @@ const countries = new Map([
 
 module.exports = async ({ recordBatch, _session, _logger }) => {
   return recordBatch.records.map((record) => {
-    const { country: countryName } = record.value;
+    const { country: countryName, postalCode } = record.value;
 
     if (isNotNil(countryName)) {
       const countryCode = countries.get(countryName.toLowerCase());
@@ -272,6 +272,18 @@ module.exports = async ({ recordBatch, _session, _logger }) => {
         record
           .set("country", countryCode)
           .addComment("country", "Country was automatically formatted");
+      }
+
+      if (
+        countryCode === "US" &&
+        isNotNil(postalCode) &&
+        postalCode.length < 5
+      ) {
+        const padded = postalCode.padStart(5, "0");
+
+        record
+          .set("postalCode", padded)
+          .addComment("postalCode", "Zipcode was padded with zeroes");
       }
     }
   });

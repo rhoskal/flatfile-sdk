@@ -13,7 +13,9 @@ module.exports = async ({ recordBatch, _session, logger }) => {
             let thisDate = dfns.format(new Date(dateValue), "yyyy-MM-dd");
             let realDate = dfns.parseISO(thisDate);
             if (dfns.isDate(realDate)) {
-              record.set(dateField, thisDate).addComment(dateField, "Automatically formatted");
+              record
+                .set(dateField, thisDate)
+                .addComment(dateField, "Automatically formatted");
               if (dfns.isFuture(realDate)) {
                 record.addError(dateField, "date cannot be in the future");
               }
