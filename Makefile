@@ -36,7 +36,7 @@ targets:
 
 .PHONY: build
 build: compile ## Transpile TypeScript
-	yarn esbuild --bundle --platform=node --target=es6 --minify --outfile=build/main.cjs.min.js src/index.ts
+	yarn esbuild --bundle --platform=node --target=node14 --format=cjs --outfile=build/main.cjs.js src/index.ts
 
 .PHONY: clean
 clean: ## Remove build artifacts
