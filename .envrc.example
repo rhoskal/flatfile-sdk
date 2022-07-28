@@ -1,0 +1,5 @@
+use nix
+
+export FLATFILE_TEAM_ID=""
+export FLATFILE_ACCESS_KEY_ID=""
+export FLATFILE_SECRET=""

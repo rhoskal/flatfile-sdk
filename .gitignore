@@ -11,6 +11,10 @@ node_modules/
 
 # builds
 build
+.flatfile
+
+# env
+.envrc
 
 # tests
 coverage

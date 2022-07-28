@@ -34,13 +34,9 @@ targets:
 # Development targets
 # -------------------
 
-.PHONY: build
-build: compile ## Transpile TypeScript
-	yarn esbuild --bundle --platform=node --target=node14 --format=cjs --outfile=build/main.cjs.js src/index.ts
-
 .PHONY: clean
 clean: ## Remove build artifacts
-	rm -rf build
+	rm -rf .flatfile
 
 .PHONY: compile
 compile: ## Run TypeScript compiler
@@ -61,3 +57,7 @@ lint: ## Lint code
 .PHONY: lint
 lint-fix: ## Lint code w/ fixes
 	yarn eslint 'src/**/*.ts' --fix
+
+.PHONY: publish
+publish: ## Publish to Flatfile
+	yarn flatfile publish src/index.ts

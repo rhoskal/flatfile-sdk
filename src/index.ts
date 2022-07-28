@@ -1,74 +1,98 @@
-/*
- * Types
- */
+import * as FF from "@flatfile/configure";
+import * as Ap from "fp-ts/Apply";
+import * as O from "fp-ts/Option";
+import * as RR from "fp-ts/ReadonlyRecord";
+import { pipe } from "fp-ts/function";
 
-type Nil = null | undefined;
-
-type Nullable<A> = A | null;
-
-type Primitive = string | boolean | number | Date | null;
-
-type RecordData<T extends Primitive | undefined = Primitive> = {
-  [key: string]: T;
-};
-
-type LoggerLevel = "error" | "warn" | "info";
-
-interface Logger {
-  level: LoggerLevel;
-  error(thing: any): void;
-  info(thing: any): void;
-  warn(thing: any): void;
-}
-
-interface FlatfileRecord {
-  value: RecordData;
-  set(field: string, value: Primitive): this;
-  get(field: string): Nullable<Primitive>;
-  addComment(fields: string | Array<string>, message: string): this;
-  addError(fields: string | Array<string>, message: string): this;
-  addWarning(fields: string | Array<string>, message: string): this;
-}
-
-interface RecordBatch {
-  records: Array<FlatfileRecord>;
-}
-
-/*
- * Guards
- */
-
-export const isNull = (x: unknown): x is null => x === null;
-
-export const isUndefined = (x: unknown): x is undefined => x === undefined;
-
-export const isNil = (x: unknown): x is Nil => isNull(x) || isUndefined(x);
-
-export const isNotNil = <T>(x: T | Nil): x is T => !isNil(x);
+import * as G from "./typeGuards";
 
 /*
  * Main
  */
 
-export default async ({
-  recordBatch,
-  _session,
-  logger,
-}: {
-  recordBatch: RecordBatch;
-  _session: unknown;
-  logger: Logger;
-}) => {
-  return recordBatch.records.map((record) => {
-    logger.info(record);
-    const email = record.value["email"];
-    logger.info(email);
-    const phone = record.value["phone"];
+const random_id: string = `${Math.floor(Date.now() / 1000)}`;
 
-    if (isNil(email) && isNil(phone)) {
-      record
-        .addWarning("email", "Must have either phone or email")
-        .addWarning("phone", "Must have either phone or email");
-    }
-  });
-};
+const sheet_leads = new FF.Sheet(
+  "Leads",
+  {
+    first_name: FF.TextField("First Name", {
+      description: "First name goes here",
+      empty: () => "how to add warning????",
+    }),
+    last_name: FF.TextField("Last Name", {
+      description: "Last name goes here",
+      required: true,
+      empty: () => "",
+    }),
+    email: FF.EmailField("Email Address", {
+      description: "Email address goes here",
+      unique: true,
+      // () => {} // how to custom error when field is not unique?
+    }),
+    // how to create hidden field from mapping?
+    // phone: FF.PhoneField("Phone Number", {
+    //   description: "Phone number goes here",
+    // }),
+    date: FF.TextField("Date", {
+      description: "Date goes here",
+    }),
+    country: FF.TextField("Country", {
+      description: "Country goes here",
+    }),
+    postal_code: FF.TextField("Postal Code", {
+      description: "Postal code goes here",
+    }),
+    opt_in: FF.BooleanField("Opt In", {
+      description: "Opt in goes here",
+    }),
+    deal_status: FF.CategoryField("Deal Status", {
+      description: "Deal status goes here",
+      categories: {
+        prospecting: "Prospecting",
+        discovery: "Discovery",
+        proposal: "Proposal",
+        negotiation: "Negotiation",
+        closed_won: "Closed Won",
+        closed_lost: "Closed Lost",
+      },
+    }),
+  },
+  {
+    onChange: (record, _session, logger) => {
+      logger.info(record);
+
+      return pipe(
+        Ap.sequenceT(O.Apply)(
+          RR.lookup("email")(record.value),
+          RR.lookup("phone")(record.value),
+        ),
+        O.match(
+          () => {
+            return record;
+          },
+          ([email, phone]) => {
+            if (G.isNil(email) && G.isNil(phone)) {
+              record.addWarning(
+                ["email", "phone"],
+                "Must have either phone or email",
+              );
+            }
+
+            return record;
+          },
+        ),
+      );
+    },
+    readOnly: true,
+  },
+);
+
+const workbook = new FF.Workbook({
+  name: `Workbook-${random_id}`,
+  namespace: `Workbook-namespace-${random_id}`,
+  sheets: {
+    sheet_leads,
+  },
+});
+
+export default workbook;
