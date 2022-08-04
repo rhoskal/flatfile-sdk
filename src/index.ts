@@ -56,6 +56,7 @@ const sheet_leads = new FF.Sheet(
         closed_lost: "Closed Lost",
       },
     }),
+    // how to add Object/Array
   },
   {
     onChange: (record, _session, logger) => {
