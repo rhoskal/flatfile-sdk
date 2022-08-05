@@ -15,8 +15,8 @@
     "publish": "make publish"
   },
   "dependencies": {
-    "@flatfile/cli": "^0.1.0",
-    "@flatfile/configure": "^0.2.0",
+    "@flatfile/cli": "^0.2.0",
+    "@flatfile/configure": "^0.3.0",
     "fp-ts": "^2.12.2",
     "io-ts": "^2.2.16",
     "ts-pattern": "^4.0.5"

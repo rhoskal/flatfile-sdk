@@ -12,42 +12,47 @@ import * as G from "./typeGuards";
 
 const random_id: string = `${Math.floor(Date.now() / 1000)}`;
 
-const sheet_leads = new FF.Sheet(
+const Leads = new FF.Sheet(
   "Leads",
   {
-    first_name: FF.TextField("First Name", {
-      description: "First name goes here",
-      empty: () => "how to add warning????",
+    first_name: FF.TextField({
+      label: "First Name",
+      description: "Lead's first name.",
     }),
-    last_name: FF.TextField("Last Name", {
-      description: "Last name goes here",
+    last_name: FF.TextField({
+      lable: "Last Name",
+      description: "Lead's last name.",
       required: true,
-      empty: () => "",
     }),
-    email: FF.EmailField("Email Address", {
-      description: "Email address goes here",
+    email: FF.TextField({
+      label: "Email Address",
+      description: "Lead's email.",
       unique: true,
-      // () => {} // how to custom error when field is not unique?
     }),
-    // how to create hidden field from mapping?
-    // phone: FF.PhoneField("Phone Number", {
-    //   description: "Phone number goes here",
-    // }),
-    date: FF.TextField("Date", {
+    phone: FF.TextField({
+      label: "Phone Number",
+      description: "Lead's phone.",
+    }),
+    date: FF.DateField({
+      label: "Date",
       description: "Date goes here",
     }),
-    country: FF.TextField("Country", {
+    country: FF.TextField({
+      label: "Country",
       description: "Country goes here",
     }),
-    postal_code: FF.TextField("Postal Code", {
+    postal_code: FF.TextField({
+      label: "Postal Code",
       description: "Postal code goes here",
     }),
-    opt_in: FF.BooleanField("Opt In", {
+    opt_in: FF.BooleanField({
+      label: "Opt In",
       description: "Opt in goes here",
     }),
-    deal_status: FF.CategoryField("Deal Status", {
+    deal_status: FF.OptionField({
+      label: "Deal Status",
       description: "Deal status goes here",
-      categories: {
+      options: {
         prospecting: "Prospecting",
         discovery: "Discovery",
         proposal: "Proposal",
@@ -56,44 +61,43 @@ const sheet_leads = new FF.Sheet(
         closed_lost: "Closed Lost",
       },
     }),
-    // how to add Object/Array
   },
   {
     onChange: (record, _session, logger) => {
       logger.info(record);
 
-      return pipe(
-        Ap.sequenceT(O.Apply)(
-          RR.lookup("email")(record.value),
-          RR.lookup("phone")(record.value),
-        ),
-        O.match(
-          () => {
-            return record;
-          },
-          ([email, phone]) => {
-            if (G.isNil(email) && G.isNil(phone)) {
-              record.addWarning(
-                ["email", "phone"],
-                "Must have either phone or email",
-              );
-            }
+      // return pipe(
+      //   Ap.sequenceT(O.Apply)(
+      //     RR.lookup("email")(record.value),
+      //     RR.lookup("phone")(record.value),
+      //   ),
+      //   O.match(
+      //     () => record,
+      //     ([email, phone]) => {
+      //       if (G.isNil(email) && G.isNil(phone)) {
+      //         record.addWarning(
+      //           ["email", "phone"],
+      //           "Must have either phone or email",
+      //         );
+      //       }
 
-            return record;
-          },
-        ),
-      );
+      //       return record;
+      //     },
+      //   ),
+      // );
+      return record;
     },
+    allowCustomFields: true,
     readOnly: true,
+    recordCompute: (_record) => { },
+    // batchRecordsCompute: async (payload: FlatfileRecords<any>) => { }
   },
 );
 
-const workbook = new FF.Workbook({
+export default new FF.Workbook({
   name: `Workbook-${random_id}`,
   namespace: `Workbook-namespace-${random_id}`,
   sheets: {
-    sheet_leads,
+    Leads,
   },
 });
-
-export default workbook;
