@@ -66,26 +66,25 @@ const Leads = new FF.Sheet(
     onChange: (record, _session, logger) => {
       logger.info(record);
 
-      // return pipe(
-      //   Ap.sequenceT(O.Apply)(
-      //     RR.lookup("email")(record.value),
-      //     RR.lookup("phone")(record.value),
-      //   ),
-      //   O.match(
-      //     () => record,
-      //     ([email, phone]) => {
-      //       if (G.isNil(email) && G.isNil(phone)) {
-      //         record.addWarning(
-      //           ["email", "phone"],
-      //           "Must have either phone or email",
-      //         );
-      //       }
+      return pipe(
+        Ap.sequenceT(O.Apply)(
+          RR.lookup("email")(record.value),
+          RR.lookup("phone")(record.value),
+        ),
+        O.match(
+          () => record,
+          ([email, phone]) => {
+            if (G.isNil(email) && G.isNil(phone)) {
+              record.addWarning(
+                ["email", "phone"],
+                "Must have either phone or email",
+              );
+            }
 
-      //       return record;
-      //     },
-      //   ),
-      // );
-      return record;
+            return record;
+          },
+        ),
+      );
     },
     allowCustomFields: true,
     readOnly: true,
