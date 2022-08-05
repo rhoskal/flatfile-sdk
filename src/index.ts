@@ -94,10 +94,12 @@ const Leads = new FF.Sheet(
   },
 );
 
-export default new FF.Workbook({
+const workbook = new FF.Workbook({
   name: `Workbook-${random_id}`,
   namespace: `Workbook-namespace-${random_id}`,
   sheets: {
     Leads,
   },
 });
+
+export default workbook;
