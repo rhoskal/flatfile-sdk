@@ -15,22 +15,24 @@
     "publish": "make publish"
   },
   "dependencies": {
-    "@flatfile/cli": "^0.2.0",
-    "@flatfile/configure": "^0.3.0",
+    "date-fns": "^2.29.1",
     "fp-ts": "^2.12.2",
     "io-ts": "^2.2.16",
     "ts-pattern": "^4.0.5"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.22.0",
-    "@typescript-eslint/parser": "^5.22.0",
-    "esbuild": "^0.14.38",
+    "@flatfile/cli": "^0.2.0",
+    "@flatfile/configure": "^0.3.0",
+    "@flatfile/hooks": "^1.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.33.0",
+    "@typescript-eslint/parser": "^5.33.0",
+    "esbuild": "^0.15.0",
     "eslint": "^8.14.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.0.0",
-    "husky": "^7.0.4",
+    "husky": "^8.0.0",
     "is-ci": "^3.0.1",
-    "lint-staged": "^12.4.1",
+    "lint-staged": "^13.0.0",
     "prettier": "^2.6.2",
     "typescript": "^4.6.4"
   },
