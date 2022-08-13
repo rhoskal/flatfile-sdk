@@ -1,8 +1,20 @@
 import * as FF from "@flatfile/configure";
+import { FlatfileRecord } from "@flatfile/hooks";
 import * as Ap from "fp-ts/Apply";
 import * as E from "fp-ts/Either";
 import * as NEA from "fp-ts/NonEmptyArray";
 import { identity, constVoid, pipe } from "fp-ts/function";
+import { match } from "ts-pattern";
+
+import * as G from "./typeGuards";
+import { fold } from "./utils";
+
+/*
+ * Types
+ */
+
+type CustomerType = "BUS" | "RES";
+type TransactionType = "CANCEL" | "CHANGE" | "INTERN" | "NEW" | "PORTIN";
 
 /*
  * Validations
@@ -36,12 +48,198 @@ const validateUKPostCode = (
     : E.left([new FF.Message("Invalid post code.", "error", "validate")]);
 };
 
+const requiredFields = (record: FlatfileRecord) => {
+  const company_name = record.get("company_name");
+  const customer_type = record.get("customer_type");
+  const device_type = record.get("device_type");
+  const first_name = record.get("first_name");
+  const house_name_or_number = record.get("house_name_or_number");
+  const last_name = record.get("last_name");
+  const locality = record.get("locality");
+  const losing_carrier = record.get("losing_carrier");
+  const post_code = record.get("post_code");
+  const service_type = record.get("service_type");
+  const street_name = record.get("street_name");
+  const transaction_type = record.get("transaction_type");
+
+  // ignore possible `null` value when matching
+
+  if (G.isNil(losing_carrier)) {
+    match(transaction_type as TransactionType)
+      .with("CANCEL", () => {
+        record.addError("losing_carrier", "Field is required.");
+      })
+      .otherwise(() => {});
+  }
+
+  if (G.isNil(device_type)) {
+    match(transaction_type as TransactionType)
+      .with("CHANGE", () => {
+        record.addError("device_type", "Field is required.");
+      })
+      .with("NEW", () => {
+        record.addError("device_type", "Field is required.");
+      })
+      .with("PORTIN", () => {
+        record.addError("device_type", "Field is required.");
+      })
+      .otherwise(() => {});
+  }
+
+  if (G.isNil(service_type)) {
+    match(transaction_type as TransactionType)
+      .with("CHANGE", () => {
+        record.addError("service_type", "Field is required.");
+      })
+      .with("NEW", () => {
+        record.addError("service_type", "Field is required.");
+      })
+      .with("PORTIN", () => {
+        record.addError("service_type", "Field is required.");
+      })
+      .otherwise(() => {});
+  }
+
+  if (G.isNil(customer_type)) {
+    match(transaction_type as TransactionType)
+      .with("CHANGE", () => {
+        record.addError("customer_type", "Field is required.");
+      })
+      .with("NEW", () => {
+        record.addError("customer_type", "Field is required.");
+      })
+      .with("PORTIN", () => {
+        record.addError("customer_type", "Field is required.");
+      })
+      .otherwise(() => {});
+  } else {
+    match(customer_type as CustomerType)
+      .with("BUS", () => {
+        if (G.isNil(company_name)) {
+          record.addWarning("company_name", "Please add a company name.");
+        }
+      })
+      .with("RES", () => {
+        if (G.isNotNil(company_name)) {
+          record.addWarning("company_name", "Please remove company name.");
+        }
+      })
+      .otherwise(() => {});
+  }
+
+  if (G.isNil(first_name)) {
+    match(customer_type as CustomerType).with("RES", () => {
+      record.addError("first_name", "Field is required.");
+    });
+
+    match(transaction_type as TransactionType)
+      .with("CHANGE", () => {
+        record.addError("first_name", "Field is required.");
+      })
+      .with("NEW", () => {
+        record.addError("first_name", "Field is required.");
+      })
+      .with("PORTIN", () => {
+        record.addError("first_name", "Field is required.");
+      });
+  }
+
+  if (G.isNil(last_name)) {
+    match(customer_type as CustomerType).with("RES", () => {
+      record.addError("last_name", "Field is required.");
+    });
+
+    match(transaction_type as TransactionType)
+      .with("CHANGE", () => {
+        record.addError("last_name", "Field is required.");
+      })
+      .with("NEW", () => {
+        record.addError("last_name", "Field is required.");
+      })
+      .with("PORTIN", () => {
+        record.addError("last_name", "Field is required.");
+      });
+  }
+
+  if (G.isNil(company_name)) {
+    match(transaction_type as TransactionType)
+      .with("CHANGE", () => {
+        record.addError("company_name", "Field is required.");
+      })
+      .with("NEW", () => {
+        record.addError("company_name", "Field is required.");
+      })
+      .with("PORTIN", () => {
+        record.addError("company_name", "Field is required.");
+      })
+      .otherwise(() => {});
+  }
+
+  if (G.isNil(house_name_or_number)) {
+    match(transaction_type)
+      .with("CHANGE", () => {
+        record.addError("house_name_or_number", "Field is required.");
+      })
+      .with("NEW", () => {
+        record.addError("house_name_or_number", "Field is required.");
+      })
+      .with("PORTIN", () => {
+        record.addError("house_name_or_number", "Field is required.");
+      })
+      .otherwise(() => {});
+  }
+
+  if (G.isNil(street_name)) {
+    match(transaction_type as TransactionType)
+      .with("CHANGE", () => {
+        record.addError("street_name", "Field is required.");
+      })
+      .with("NEW", () => {
+        record.addError("street_name", "Field is required.");
+      })
+      .with("PORTIN", () => {
+        record.addError("street_name", "Field is required.");
+      })
+      .otherwise(() => {});
+  }
+
+  if (G.isNil(locality)) {
+    match(transaction_type as TransactionType)
+      .with("CHANGE", () => {
+        record.addError("locality", "Field is required.");
+      })
+      .with("NEW", () => {
+        record.addError("locality", "Field is required.");
+      })
+      .with("PORTIN", () => {
+        record.addError("locality", "Field is required.");
+      })
+      .otherwise(() => {});
+  }
+
+  if (G.isNil(post_code)) {
+    match(transaction_type as TransactionType)
+      .with("CHANGE", () => {
+        record.addError("post_code", "Field is required.");
+      })
+      .with("NEW", () => {
+        record.addError("post_code", "Field is required.");
+      })
+      .with("PORTIN", () => {
+        record.addError("post_code", "Field is required.");
+      })
+      .otherwise(() => {});
+  }
+
+  return record;
+};
+
 /*
  * Main
  */
 
-const X = new FF.Sheet(
-  "asdf",
+const EmergencyService = new FF.Sheet(
+  "Emergency Service (Bandwidth)",
   {
     transaction_type: FF.OptionField({
       label: "Transaction Type",
@@ -59,7 +257,7 @@ const X = new FF.Sheet(
     }),
     service: FF.OptionField({
       label: "Service",
-      required: true, // how to customize error message?
+      required: true,
       options: {
         es: "ES",
       },
@@ -179,7 +377,19 @@ const X = new FF.Sheet(
   {
     allowCustomFields: false,
     readOnly: true,
-    recordCompute: (_record, _logger) => {},
+    recordCompute: (record, _logger) => {
+      return fold(requiredFields)(record);
+    },
     batchRecordsCompute: async (_payload) => {},
   },
 );
+
+const workbook = new FF.Workbook({
+  name: "Workbook - Bandwidth Demo",
+  namespace: "Bandwidth",
+  sheets: {
+    EmergencyService,
+  },
+});
+
+export default workbook;

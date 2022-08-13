@@ -7,6 +7,7 @@ import * as Str from "fp-ts/string";
 import { pipe } from "fp-ts/function";
 
 import * as G from "./typeGuards";
+import { fold } from "./utils";
 
 const countries = new Map<string, string>([
   ["Afghanistan".toLowerCase(), "AF"],
@@ -255,11 +256,6 @@ const countries = new Map<string, string>([
   ["Zimbabwe".toLowerCase(), "ZW"],
 ]);
 
-const fold =
-  (...fns) =>
-  (x: unknown) =>
-    fns.map((f) => f(x));
-
 const emailOrPhoneRequired = (record: FlatfileRecord) => {
   return pipe(
     Ap.sequenceT(O.Apply)(
@@ -379,7 +375,9 @@ const Leads = new FF.Sheet(
     recordCompute: (record, _logger) => {
       return fold(emailOrPhoneRequired, zipCodeZeroPadding)(record);
     },
-    batchRecordsCompute: async (_payload) => {},
+    batchRecordsCompute: async (_payload) => {
+      // make network req for countries
+    },
   },
 );
 
