@@ -1,13 +1,12 @@
 import * as FF from "@flatfile/configure";
 import { FlatfileRecord } from "@flatfile/hooks";
-import * as Ap from "fp-ts/Apply";
 import * as E from "fp-ts/Either";
 import * as NEA from "fp-ts/NonEmptyArray";
 import { identity, constVoid, pipe } from "fp-ts/function";
 import { match } from "ts-pattern";
 
 import * as G from "./typeGuards";
-import { fold } from "./utils";
+import { fold, sequenceValidationT } from "./utils";
 
 /*
  * Types
@@ -19,10 +18,6 @@ type TransactionType = "CANCEL" | "CHANGE" | "INTERN" | "NEW" | "PORTIN";
 /*
  * Validations
  */
-
-const sequenceValidationT = Ap.sequenceT(
-  E.getApplicativeValidation(NEA.getSemigroup<FF.Message>()),
-);
 
 const validateMaxLength =
   (len: number) =>

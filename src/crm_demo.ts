@@ -1,13 +1,15 @@
 import * as FF from "@flatfile/configure";
 import { FlatfileRecord } from "@flatfile/hooks";
 import * as Ap from "fp-ts/Apply";
+import * as E from "fp-ts/Either";
 import * as M from "fp-ts/Map";
+import * as NEA from "fp-ts/NonEmptyArray";
 import * as O from "fp-ts/Option";
 import * as Str from "fp-ts/string";
-import { pipe } from "fp-ts/function";
+import { constVoid, identity, pipe } from "fp-ts/function";
 
 import * as G from "./typeGuards";
-import { fold } from "./utils";
+import { fold, sequenceValidationT } from "./utils";
 
 const countries = new Map<string, string>([
   ["Afghanistan".toLowerCase(), "AF"],
@@ -304,6 +306,18 @@ const zipCodeZeroPadding = (record: FlatfileRecord) => {
 };
 
 /*
+ * Validations
+ */
+
+const validateEmail = (
+  value: string,
+): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
+  return value.includes("@")
+    ? E.right(value)
+    : E.left([new FF.Message("Invalid email address.", "warn", "validate")]);
+};
+
+/*
  * Main
  */
 
@@ -325,9 +339,12 @@ const Leads = new FF.Sheet(
       unique: true,
       compute: (value) => value.toLowerCase(),
       validate: (value) => {
-        if (G.isFalsy(value.includes("@"))) {
-          return [new FF.Message("Invalid email address.", "warn", "validate")];
-        }
+        const validEmail = validateEmail(value);
+
+        return pipe(
+          sequenceValidationT(validEmail),
+          E.match(identity, constVoid),
+        );
       },
     }),
     phone: FF.TextField({
