@@ -12,7 +12,7 @@ type Falsy = null | undefined | false | "" | 0;
 
 /**
  * Helper function to determine if a value is null.
- * Useful in if/else statments or ternaries.
+ * Useful in if/else statements or ternaries.
  *
  * @param {*} x - Any object/value
  *
@@ -27,7 +27,7 @@ export const isNull = (x: unknown): x is null => x === null;
 
 /**
  * Helper function to determine if a value is undefined.
- * Useful in if/else statments or ternaries.
+ * Useful in if/else statements or ternaries.
  *
  * @param {*} x - Any object/value
  *
@@ -42,7 +42,7 @@ export const isUndefined = (x: unknown): x is undefined => x === undefined;
 
 /**
  * Helper function to determine if a value is null, undefined or an empty string.
- * Useful in if/else statments or ternaries.
+ * Useful in if/else statements or ternaries.
  *
  * @param {*} x - Any object/value
  *
@@ -58,7 +58,7 @@ export const isNil = (x: unknown): x is Nil =>
 
 /**
  * Helper function to determine if a value is NOT null or undefined.
- * Useful in if/else statments or ternaries.
+ * Useful in if/else statements or ternaries.
  *
  * @param {*} x - Any object/value
  *
@@ -73,7 +73,7 @@ export const isNotNil = <T>(x: T | Nil): x is T => !isNil(x);
 
 /**
  * Helper function to determine if a value is falsy.
- * Useful in if/else statments or ternaries.
+ * Useful in if/else statements or ternaries.
  *
  * @param {*} x - Any object/value
  *
@@ -89,7 +89,7 @@ export const isFalsy = (x: unknown): x is Falsy =>
 
 /**
  * Helper function to determine if a value is truthy.
- * Useful in if/else statments or ternaries.
+ * Useful in if/else statements or ternaries.
  *
  * @param {*} x - Any object/value
  *
@@ -104,7 +104,7 @@ export const isTruthy = (x: unknown): x is true => !isFalsy(x);
 
 /**
  * Helper function to determine if a value is a string.
- * Useful in if/else statments or ternaries.
+ * Useful in if/else statements or ternaries.
  *
  * @param {*} x - Any object/value
  *
@@ -119,7 +119,7 @@ export const isString = (x: unknown): x is string => typeof x === "string";
 
 /**
  * Helper function to determine if a value is a number.
- * Useful in if/else statments or ternaries.
+ * Useful in if/else statements or ternaries.
  *
  * @param {*} x - Any object/value
  *
