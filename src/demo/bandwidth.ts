@@ -5,8 +5,8 @@ import * as NEA from "fp-ts/NonEmptyArray";
 import { identity, constVoid, pipe } from "fp-ts/function";
 import { match } from "ts-pattern";
 
-import * as G from "./typeGuards";
-import { fold, sequenceValidationT } from "./utils";
+import * as G from "../typeGuards";
+import { fold, sequenceValidationT } from "../utils";
 
 /*
  * Types

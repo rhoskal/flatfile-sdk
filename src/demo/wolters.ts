@@ -4,8 +4,8 @@ import * as E from "fp-ts/Either";
 import * as NEA from "fp-ts/NonEmptyArray";
 import { constVoid, identity, pipe } from "fp-ts/function";
 
-import * as G from "./typeGuards";
-import { sequenceValidationT } from "./utils";
+import * as G from "../typeGuards";
+import { sequenceValidationT } from "../utils";
 
 /*
  * Validations

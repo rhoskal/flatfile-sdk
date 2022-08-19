@@ -1,6 +1,4 @@
 import * as FF from "@flatfile/configure";
-import { FlatfileRecord } from "@flatfile/hooks";
-import * as Ap from "fp-ts/Apply";
 import * as E from "fp-ts/Either";
 import * as M from "fp-ts/Map";
 import * as NEA from "fp-ts/NonEmptyArray";
@@ -8,8 +6,7 @@ import * as O from "fp-ts/Option";
 import * as Str from "fp-ts/string";
 import { constVoid, identity, pipe } from "fp-ts/function";
 
-import * as G from "./typeGuards";
-import { fold, sequenceValidationT } from "./utils";
+import { sequenceValidationT } from "../utils";
 
 const countries = new Map<string, string>([
   ["Afghanistan".toLowerCase(), "AF"],
@@ -258,51 +255,13 @@ const countries = new Map<string, string>([
   ["Zimbabwe".toLowerCase(), "ZW"],
 ]);
 
-const emailOrPhoneRequired = (record: FlatfileRecord) => {
-  return pipe(
-    Ap.sequenceT(O.Apply)(
-      O.fromNullable(() => record.get("email")),
-      O.fromNullable(() => record.get("phone")),
-    ),
-    O.match(
-      () => record,
-      ([email, phone]) => {
-        if (G.isNil(email) && G.isNil(phone)) {
-          record.addWarning(
-            ["email", "phone"],
-            "Must have either phone or email.",
-          );
-        }
-
-        return record;
-      },
-    ),
-  );
-};
-
-const zipCodeZeroPadding = (record: FlatfileRecord) => {
-  return pipe(
-    Ap.sequenceT(O.Apply)(
-      O.fromNullable(() => record.get("postal_code")),
-      O.fromNullable(() => record.get("country")),
-    ),
-    O.match(
-      () => record,
-      ([zip, country]) => {
-        if (G.isString(zip) && G.isString(country)) {
-          if (country === "US" && zip.length < 5) {
-            const padded = zip.padStart(5, "0");
-
-            record
-              .set("postal_code", padded)
-              .addInfo("postal_code", "Padded with zeros.");
-          }
-        }
-
-        return record;
-      },
-    ),
-  );
+const toTitleCase = (value: string): string => {
+  return value
+    .trim()
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 
 /*
@@ -314,30 +273,35 @@ const validateEmail = (
 ): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
   return value.includes("@")
     ? E.right(value)
-    : E.left([new FF.Message("Invalid email address.", "warn", "validate")]);
+    : E.left([new FF.Message("Invalid email address.", "error", "validate")]);
 };
 
 /*
  * Main
  */
 
-const Leads = new FF.Sheet(
-  "Leads (CRM Demo)",
+const Employees = new FF.Sheet(
+  "Employees (Deed)",
   {
+    employment_status: FF.TextField({
+      label: "Employment Status",
+    }),
     first_name: FF.TextField({
       label: "First Name",
-      description: "Lead's first name.",
+      compute: toTitleCase,
     }),
     last_name: FF.TextField({
       label: "Last Name",
-      description: "Lead's last name.",
-      required: true,
+      compute: toTitleCase,
     }),
-    email: FF.TextField({
-      label: "Email Address",
-      description: "Lead's email.",
+    employee_id: FF.TextField({
+      label: "Employee Id",
+    }),
+    employee_email: FF.TextField({
+      label: "Employee Email",
       unique: true,
-      compute: (value) => value.toLowerCase(),
+      required: true,
+      compute: (value) => value.trim().toLowerCase(),
       validate: (value) => {
         const validEmail = validateEmail(value);
 
@@ -347,17 +311,43 @@ const Leads = new FF.Sheet(
         );
       },
     }),
-    phone: FF.TextField({
-      label: "Phone Number",
-      description: "Lead's phone.",
+    contact_type: FF.OptionField({
+      label: "Contract Type",
+      options: {
+        employee: "Employee",
+        independent_contractor: "Independent Contractor",
+      },
     }),
-    date: FF.DateField({
-      label: "Date",
-      description: "Date goes here.",
+    department_name: FF.TextField({
+      label: "Department Name",
+      compute: toTitleCase,
+    }),
+    manager_email: FF.TextField({
+      label: "Manager Email",
+      compute: (value) => value.trim().toLowerCase(),
+      validate: (value) => {
+        const validEmail = validateEmail(value);
+
+        return pipe(
+          sequenceValidationT(validEmail),
+          E.match(identity, constVoid),
+        );
+      },
+    }),
+    location: FF.TextField({
+      label: "Location",
+      compute: toTitleCase,
+    }),
+    city: FF.TextField({
+      label: "City",
+      compute: toTitleCase,
+    }),
+    job_title: FF.TextField({
+      label: "Job Title",
+      compute: (value) => value.trim(),
     }),
     country: FF.TextField({
       label: "Country",
-      description: "Country goes here",
       compute: (value) => {
         return pipe(
           M.lookup(Str.Eq)(value.toLowerCase())(countries),
@@ -365,44 +355,20 @@ const Leads = new FF.Sheet(
         );
       },
     }),
-    postal_code: FF.TextField({
-      label: "Postal Code",
-      description: "Postal code goes here",
-    }),
-    opt_in: FF.BooleanField({
-      label: "Opt In",
-      description: "Opt in goes here",
-    }),
-    deal_status: FF.OptionField({
-      label: "Deal Status",
-      description: "Deal status goes here",
-      options: {
-        prospecting: "Prospecting",
-        discovery: "Discovery",
-        proposal: "Proposal",
-        negotiation: "Negotiation",
-        closed_won: "Closed Won",
-        closed_lost: "Closed Lost",
-      },
-    }),
   },
   {
     allowCustomFields: true,
     readOnly: true,
-    recordCompute: (record, _logger) => {
-      return fold(emailOrPhoneRequired, zipCodeZeroPadding)(record);
-    },
-    batchRecordsCompute: async (_payload) => {
-      // make network req for countries
-    },
+    recordCompute: (_record, _logger) => {},
+    batchRecordsCompute: async (_payload) => {},
   },
 );
 
 const workbook = new FF.Workbook({
-  name: "Workbook - CRM Demo",
-  namespace: "CRM",
+  name: "Workbook - Deed Demo",
+  namespace: "Deed",
   sheets: {
-    Leads,
+    Employees,
   },
 });
 

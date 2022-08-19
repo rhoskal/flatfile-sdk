@@ -15,6 +15,16 @@ export const fold =
   (x: FlatfileRecord) =>
     fns.map((f) => f(x));
 
+/**
+ * Validation helper to accumulate error messages since
+ * E.Either ap uses a flatMap and thus stops at the first error.
+ *
+ * @example
+ * pipe(
+ *   sequenceValidationT(validateEmail, maxLength),
+ *   E.match(identity, constVoid),
+ * );
+ */
 export const sequenceValidationT = Ap.sequenceT(
   E.getApplicativeValidation(NEA.getSemigroup<Message>()),
 );
