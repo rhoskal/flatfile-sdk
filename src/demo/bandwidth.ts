@@ -1,4 +1,5 @@
 import * as FF from "@flatfile/configure";
+
 import { FlatfileRecord } from "@flatfile/hooks";
 import * as E from "fp-ts/Either";
 import * as NEA from "fp-ts/NonEmptyArray";
@@ -16,10 +17,10 @@ type CustomerType = "BUS" | "RES";
 type TransactionType = "CANCEL" | "CHANGE" | "INTERN" | "NEW" | "PORTIN";
 
 /*
- * Validations
+ * Field Validations
  */
 
-const validateMaxLength =
+const ensureMaxLength =
   (len: number) =>
   (value: string): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
     return value.length <= len
@@ -33,7 +34,7 @@ const validateMaxLength =
         ]);
   };
 
-const validateUKPostCode = (
+const ensureValidPostCode = (
   value: string,
 ): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
   const re = /^([A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}|GIR\s?0A{2})$/g;
@@ -42,6 +43,10 @@ const validateUKPostCode = (
     ? E.right(value)
     : E.left([new FF.Message("Invalid post code.", "error", "validate")]);
 };
+
+/*
+ * Record Hooks
+ */
 
 const requiredFields = (record: FlatfileRecord) => {
   const company_name = record.get("company_name");
@@ -233,8 +238,8 @@ const requiredFields = (record: FlatfileRecord) => {
  * Main
  */
 
-const EmergencyService = new FF.Sheet(
-  "Emergency Service (Bandwidth)",
+const EmergencyServices = new FF.Sheet(
+  "Emergency Services (Bandwidth)",
   {
     transaction_type: FF.OptionField({
       label: "Transaction Type",
@@ -283,10 +288,10 @@ const EmergencyService = new FF.Sheet(
     first_name: FF.TextField({
       label: "First Name",
       validate: (value) => {
-        const maxLength = validateMaxLength(20)(value);
+        const isMaxLength = ensureMaxLength(20)(value);
 
         return pipe(
-          sequenceValidationT(maxLength),
+          sequenceValidationT(isMaxLength),
           E.match(identity, constVoid),
         );
       },
@@ -294,10 +299,10 @@ const EmergencyService = new FF.Sheet(
     last_name: FF.TextField({
       label: "Last Name",
       validate: (value) => {
-        const maxLength = validateMaxLength(50)(value);
+        const isMaxLength = ensureMaxLength(50)(value);
 
         return pipe(
-          sequenceValidationT(maxLength),
+          sequenceValidationT(isMaxLength),
           E.match(identity, constVoid),
         );
       },
@@ -305,10 +310,10 @@ const EmergencyService = new FF.Sheet(
     title: FF.TextField({
       label: "Title",
       validate: (value) => {
-        const maxLength = validateMaxLength(10)(value);
+        const isMaxLength = ensureMaxLength(10)(value);
 
         return pipe(
-          sequenceValidationT(maxLength),
+          sequenceValidationT(isMaxLength),
           E.match(identity, constVoid),
         );
       },
@@ -316,10 +321,10 @@ const EmergencyService = new FF.Sheet(
     company_name: FF.TextField({
       label: "Company Name",
       validate: (value) => {
-        const maxLength = validateMaxLength(60)(value);
+        const isMaxLength = ensureMaxLength(60)(value);
 
         return pipe(
-          sequenceValidationT(maxLength),
+          sequenceValidationT(isMaxLength),
           E.match(identity, constVoid),
         );
       },
@@ -327,10 +332,10 @@ const EmergencyService = new FF.Sheet(
     house_name_or_number: FF.TextField({
       label: "House Name or Number",
       validate: (value) => {
-        const maxLength = validateMaxLength(60)(value);
+        const isMaxLength = ensureMaxLength(60)(value);
 
         return pipe(
-          sequenceValidationT(maxLength),
+          sequenceValidationT(isMaxLength),
           E.match(identity, constVoid),
         );
       },
@@ -338,10 +343,10 @@ const EmergencyService = new FF.Sheet(
     street_name: FF.TextField({
       label: "Street Name",
       validate: (value) => {
-        const maxLength = validateMaxLength(55)(value);
+        const isMaxLength = ensureMaxLength(55)(value);
 
         return pipe(
-          sequenceValidationT(maxLength),
+          sequenceValidationT(isMaxLength),
           E.match(identity, constVoid),
         );
       },
@@ -349,10 +354,10 @@ const EmergencyService = new FF.Sheet(
     locality: FF.TextField({
       label: "Locality",
       validate: (value) => {
-        const maxLength = validateMaxLength(30)(value);
+        const isMaxLength = ensureMaxLength(30)(value);
 
         return pipe(
-          sequenceValidationT(maxLength),
+          sequenceValidationT(isMaxLength),
           E.match(identity, constVoid),
         );
       },
@@ -360,10 +365,10 @@ const EmergencyService = new FF.Sheet(
     post_code: FF.TextField({
       label: "Post Code",
       validate: (value) => {
-        const postCode = validateUKPostCode(value);
+        const isValidPostCode = ensureValidPostCode(value);
 
         return pipe(
-          sequenceValidationT(postCode),
+          sequenceValidationT(isValidPostCode),
           E.match(identity, constVoid),
         );
       },
@@ -383,7 +388,7 @@ const workbook = new FF.Workbook({
   name: "Workbook - Bandwidth Demo",
   namespace: "Bandwidth",
   sheets: {
-    EmergencyService,
+    EmergencyServices,
   },
 });
 

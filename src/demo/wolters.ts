@@ -8,10 +8,10 @@ import * as G from "../typeGuards";
 import { sequenceValidationT } from "../utils";
 
 /*
- * Validations
+ * Field Validations
  */
 
-const validateRecommended = (
+const ensureRecommended = (
   value: unknown,
 ): E.Either<NEA.NonEmptyArray<FF.Message>, unknown> => {
   return G.isNotNil(value)
@@ -19,7 +19,7 @@ const validateRecommended = (
     : E.left([new FF.Message("Recommended field.", "warn", "validate")]);
 };
 
-const validateMonthlyPeriod = (
+const ensureMonthlyPeriod = (
   value: number,
 ): E.Either<NEA.NonEmptyArray<FF.Message>, number> => {
   return value >= 1 && value <= 12
@@ -29,7 +29,7 @@ const validateMonthlyPeriod = (
       ]);
 };
 
-const validateRegex =
+const ensureRegex =
   (regex: RegExp) =>
   (value: string): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
     return regex.test(value)
@@ -43,7 +43,7 @@ const validateRegex =
         ]);
   };
 
-const validateMaxLength =
+const ensureMaxLength =
   (len: number) =>
   (value: string): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
     return value.length <= len
@@ -68,7 +68,7 @@ const Journals = new FF.Sheet(
       label: "Journal Id",
       required: true,
       validate: (value) => {
-        const maxLen = validateMaxLength(100)(value);
+        const maxLen = ensureMaxLength(100)(value);
 
         return pipe(sequenceValidationT(maxLen), E.match(identity, constVoid));
       },
@@ -76,8 +76,8 @@ const Journals = new FF.Sheet(
     je_line_description: FF.TextField({
       label: "Comment",
       validate: (value) => {
-        const maxLen = validateMaxLength(256)(value);
-        const recommended = validateRecommended(value);
+        const maxLen = ensureMaxLength(256)(value);
+        const recommended = ensureRecommended(value);
 
         return pipe(
           sequenceValidationT(maxLen, recommended),
@@ -88,7 +88,7 @@ const Journals = new FF.Sheet(
     source: FF.TextField({
       label: "Source",
       validate: (value) => {
-        const maxLen = validateMaxLength(25)(value);
+        const maxLen = ensureMaxLength(25)(value);
 
         return pipe(sequenceValidationT(maxLen), E.match(identity, constVoid));
       },
@@ -96,10 +96,10 @@ const Journals = new FF.Sheet(
     effective_date: FF.DateField({
       label: "Document Date",
       validate: (value) => {
-        const recommended = validateRecommended(value);
+        const isRecommended = ensureRecommended(value);
 
         return pipe(
-          sequenceValidationT(recommended),
+          sequenceValidationT(isRecommended),
           E.match(identity, constVoid),
         );
       },
@@ -107,10 +107,10 @@ const Journals = new FF.Sheet(
     period: FF.NumberField({
       label: "Period",
       validate: (value) => {
-        const monthlyPeriod = validateMonthlyPeriod(value);
+        const isMonthlyPeriod = ensureMonthlyPeriod(value);
 
         return pipe(
-          sequenceValidationT(monthlyPeriod),
+          sequenceValidationT(isMonthlyPeriod),
           E.match(identity, constVoid),
         );
       },
@@ -118,7 +118,7 @@ const Journals = new FF.Sheet(
     gl_account_number: FF.TextField({
       label: "Account Number",
       validate: (value) => {
-        const maxLen = validateMaxLength(100)(value);
+        const maxLen = ensureMaxLength(100)(value);
 
         return pipe(sequenceValidationT(maxLen), E.match(identity, constVoid));
       },
@@ -180,10 +180,10 @@ const Journals = new FF.Sheet(
         }
       },
       validate: (value) => {
-        const militaryTime = validateRegex(/^\d{4}$/g)(value);
+        const isMilitaryTime = ensureRegex(/^\d{4}$/g)(value);
 
         return pipe(
-          sequenceValidationT(militaryTime),
+          sequenceValidationT(isMilitaryTime),
           E.match(identity, constVoid),
         );
       },

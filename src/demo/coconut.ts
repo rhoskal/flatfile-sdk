@@ -7,6 +7,7 @@ import * as NEA from "fp-ts/NonEmptyArray";
 import * as O from "fp-ts/Option";
 import * as Str from "fp-ts/string";
 import { constVoid, identity, pipe } from "fp-ts/function";
+import * as t from "io-ts";
 
 import * as G from "../typeGuards";
 import { fold, sequenceValidationT } from "../utils";
@@ -258,6 +259,22 @@ const countries = new Map<string, string>([
   ["Zimbabwe".toLowerCase(), "ZW"],
 ]);
 
+/*
+ * Field Validations
+ */
+
+const ensureValidEmail = (
+  value: string,
+): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
+  return value.includes("@")
+    ? E.right(value)
+    : E.left([new FF.Message("Invalid email address.", "warn", "validate")]);
+};
+
+/*
+ * Record Hooks
+ */
+
 const emailOrPhoneRequired = (record: FlatfileRecord) => {
   return pipe(
     Ap.sequenceT(O.Apply)(
@@ -282,39 +299,25 @@ const emailOrPhoneRequired = (record: FlatfileRecord) => {
 
 const zipCodeZeroPadding = (record: FlatfileRecord) => {
   return pipe(
-    Ap.sequenceT(O.Apply)(
-      O.fromNullable(() => record.get("postal_code")),
-      O.fromNullable(() => record.get("country")),
+    Ap.sequenceT(E.Apply)(
+      t.string.decode(record.get("postal_code")),
+      t.string.decode(record.get("country")),
     ),
-    O.match(
+    E.match(
       () => record,
       ([zip, country]) => {
-        if (G.isString(zip) && G.isString(country)) {
-          if (country === "US" && zip.length < 5) {
-            const padded = zip.padStart(5, "0");
+        if (country === "US" && zip.length < 5) {
+          const padded = zip.padStart(5, "0");
 
-            record
-              .set("postal_code", padded)
-              .addInfo("postal_code", "Padded with zeros.");
-          }
+          record
+            .set("postal_code", padded)
+            .addInfo("postal_code", "Padded with zeros.");
         }
 
         return record;
       },
     ),
   );
-};
-
-/*
- * Validations
- */
-
-const validateEmail = (
-  value: string,
-): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
-  return value.includes("@")
-    ? E.right(value)
-    : E.left([new FF.Message("Invalid email address.", "warn", "validate")]);
 };
 
 /*
@@ -339,10 +342,10 @@ const Leads = new FF.Sheet(
       unique: true,
       compute: (value) => value.toLowerCase(),
       validate: (value) => {
-        const validEmail = validateEmail(value);
+        const isValidEmail = ensureValidEmail(value);
 
         return pipe(
-          sequenceValidationT(validEmail),
+          sequenceValidationT(isValidEmail),
           E.match(identity, constVoid),
         );
       },

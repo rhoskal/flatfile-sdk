@@ -265,10 +265,10 @@ const toTitleCase = (value: string): string => {
 };
 
 /*
- * Validations
+ * Field Validations
  */
 
-const validateEmail = (
+const ensureValidEmail = (
   value: string,
 ): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
   return value.includes("@")
@@ -303,10 +303,10 @@ const Employees = new FF.Sheet(
       required: true,
       compute: (value) => value.trim().toLowerCase(),
       validate: (value) => {
-        const validEmail = validateEmail(value);
+        const isValidEmail = ensureValidEmail(value);
 
         return pipe(
-          sequenceValidationT(validEmail),
+          sequenceValidationT(isValidEmail),
           E.match(identity, constVoid),
         );
       },
@@ -326,10 +326,10 @@ const Employees = new FF.Sheet(
       label: "Manager Email",
       compute: (value) => value.trim().toLowerCase(),
       validate: (value) => {
-        const validEmail = validateEmail(value);
+        const isValidEmail = ensureValidEmail(value);
 
         return pipe(
-          sequenceValidationT(validEmail),
+          sequenceValidationT(isValidEmail),
           E.match(identity, constVoid),
         );
       },

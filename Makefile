@@ -57,7 +57,3 @@ lint: ## Lint code
 .PHONY: lint
 lint-fix: ## Lint code w/ fixes
 	yarn eslint 'src/**/*.ts' --fix
-
-.PHONY: publish
-publish: ## Publish to Flatfile
-	yarn flatfile publish src/index.ts
