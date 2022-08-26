@@ -766,25 +766,30 @@ const AssetClasses = new FF.Sheet(
   {
     ridgeline_id: FF.TextField({
       label: "Ridgeline Identifier",
+      description: "Some description",
       compute: (value) => pipe(value, Str.trim),
     }),
     reference_id: FF.TextField({
       label: "Reference Identifier",
+      description: "Some description",
       unique: true,
       primary: true,
       compute: (value) => pipe(value, Str.trim),
     }),
     record_number: FF.NumberField({
       label: "Record Number",
+      description: "Some description",
       required: true,
     }),
     id: FF.TextField({
       label: "Id",
+      description: "Some description",
       required: true,
       compute: (value) => pipe(value, Str.trim),
     }),
     name: FF.TextField({
       label: "Name",
+      description: "Some description",
       required: true,
     }),
   },
@@ -800,8 +805,13 @@ const AssetClasses = new FF.Sheet(
 const Securities = new FF.Sheet(
   "Securities (Ridgeline)",
   {
+    asset_class_id: FF.LinkedField({
+      label: "Asset Class",
+      sheet: AssetClasses,
+    }),
     asset_type: FF.OptionField({
       label: "Asset Type",
+      description: "Some description",
       options: {
         caus: "CAUS",
         clus: "CLUS",
@@ -811,16 +821,20 @@ const Securities = new FF.Sheet(
     }),
     ticker: FF.TextField({
       label: "Ticker",
+      description: "Some description",
       compute: (value) => pipe(value, Str.trim, Str.toUpperCase),
     }),
     cusip: FF.TextField({
       label: "CUSIP",
+      description: "Some description",
     }),
     name: FF.TextField({
       label: "Name",
+      description: "Some description",
     }),
     combo_cusip_name: FF.TextField({
       label: "CUSIP + Name",
+      description: "Some description",
       unique: true,
       // hiddenFrom: {
       //   mapping: true,
@@ -830,22 +844,28 @@ const Securities = new FF.Sheet(
     }),
     issuer: FF.TextField({
       label: "Issuer",
+      description: "Some description",
     }),
     industry1: FF.TextField({
       label: "Industry 1",
+      description: "Some description",
     }),
     sector1: FF.TextField({
       label: "Sector 1",
+      description: "Some description",
     }),
     industry2: FF.TextField({
       label: "Industry2",
+      description: "Some description",
     }),
     sector2: FF.TextField({
       label: "Sector 2",
+      description: "Some description",
     }),
     // this needs to be dynamic BUT we can't support that
     local_currency: FF.OptionField({
       label: "Local Currency",
+      description: "Some description",
       options: pipe(
         apiResponse.data.currencies.edges,
         RA.map(({ node }) => ({
@@ -861,12 +881,15 @@ const Securities = new FF.Sheet(
     }),
     sedol: FF.TextField({
       label: "Sedol",
+      description: "Some description",
     }),
     isin: FF.TextField({
       label: "ISIN",
+      description: "Some description",
     }),
     effective_date: FF.TextField({
       label: "Effective Date",
+      description: "Some description",
       compute: (value) => {
         if (datefns.isDate(value)) {
           return datefns.format(new Date(value), "yyyy-MM-dd");
@@ -874,10 +897,6 @@ const Securities = new FF.Sheet(
           return value;
         }
       },
-    }),
-    asset_class_id: FF.LinkedField({
-      label: "Asset Class",
-      sheet: AssetClasses,
     }),
   },
   {
