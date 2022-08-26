@@ -875,7 +875,7 @@ const Securities = new FF.Sheet(
         }
       },
     }),
-    asset_class: FF.LinkedField({
+    asset_class_id: FF.LinkedField({
       label: "Asset Class",
       sheet: AssetClasses,
     }),
