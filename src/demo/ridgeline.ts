@@ -761,7 +761,7 @@ const compositeUniquenessCheck = (record: FlatfileRecord) => {
  * Main
  */
 
-const AssetClass = new FF.Sheet(
+const AssetClasses = new FF.Sheet(
   "Asset Classes (Ridgeline)",
   {
     ridgeline_id: FF.TextField({
@@ -789,7 +789,7 @@ const AssetClass = new FF.Sheet(
     }),
   },
   {
-    allowCustomFields: true,
+    allowCustomFields: false,
     readOnly: true,
     previewFieldKey: "name",
     recordCompute: (_record, _logger) => {},
@@ -797,7 +797,7 @@ const AssetClass = new FF.Sheet(
   },
 );
 
-const Security = new FF.Sheet(
+const Securities = new FF.Sheet(
   "Securities (Ridgeline)",
   {
     asset_type: FF.OptionField({
@@ -877,11 +877,11 @@ const Security = new FF.Sheet(
     }),
     asset_class: FF.LinkedField({
       label: "Asset Class",
-      sheet: AssetClass,
+      sheet: AssetClasses,
     }),
   },
   {
-    allowCustomFields: true,
+    allowCustomFields: false,
     readOnly: true,
     recordCompute: (record, _logger) => {
       return fold(compositeUniquenessCheck)(record);
@@ -894,8 +894,8 @@ const workbook = new FF.Workbook({
   name: "Workbook - Ridgeline Demo",
   namespace: "Ridgeline",
   sheets: {
-    Security,
-    AssetClass,
+    Securities,
+    AssetClasses,
   },
 });
 
