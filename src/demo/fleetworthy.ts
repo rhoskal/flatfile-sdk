@@ -15,6 +15,7 @@ import * as G from "../typeGuards";
  * Field Validations
  */
 
+//this should be added to stdlib as a validate function, then included into an SSN Field
 const ensureValidSsn = (
   value: string,
 ): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
@@ -37,6 +38,7 @@ const ensureValidVin = (
     : E.left([new FF.Message("Invalid VIN format.", "warn", "validate")]);
 };
 
+//this could be expressed with expression lang, not sure what to do about re-evaluating this vs current time.
 const ensureNoFutureDate = (
   value: Date,
 ): E.Either<NEA.NonEmptyArray<FF.Message>, Date> => {
@@ -47,6 +49,7 @@ const ensureNoFutureDate = (
       ]);
 };
 
+//expression lang
 const ensureNonNegative = (
   value: number,
 ): E.Either<NEA.NonEmptyArray<FF.Message>, number> => {
@@ -55,6 +58,7 @@ const ensureNonNegative = (
     : E.left([new FF.Message("Must be a positive value.", "warn", "validate")]);
 };
 
+//expression lang
 const ensureValidManufactureYear = (
   value: number,
 ): E.Either<NEA.NonEmptyArray<FF.Message>, number> => {
@@ -76,6 +80,7 @@ const grossVehicleWeightCheck = (record: FlatfileRecord) => {
       empty_weight: t.number.decode(Number(record.get("empty_weight"))),
       actual_cgvw: t.number.decode(Number(record.get("actual_cgvw"))),
     }),
+    //expression lang and computed fields
     E.match(
       () => record,
       ({ asset_type, empty_weight, actual_cgvw }) => {
