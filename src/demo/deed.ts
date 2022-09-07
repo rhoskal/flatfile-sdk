@@ -255,6 +255,7 @@ const countries = new Map<string, string>([
   ["Zimbabwe".toLowerCase(), "ZW"],
 ]);
 
+// this should be added to stdlib
 const toTitleCase = (value: string): string => {
   return value
     .trim()
@@ -359,6 +360,7 @@ const Employees = new FF.Sheet(
   {
     allowCustomFields: true,
     readOnly: true,
+    // you don't need to include blank functions, they are optional
     recordCompute: (_record, _logger) => {},
     batchRecordsCompute: async (_payload) => {},
   },

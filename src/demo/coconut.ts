@@ -14,6 +14,7 @@ import { fold, sequenceValidationT } from "../utils";
 
 const countries = new Map<string, string>([
   ["Afghanistan".toLowerCase(), "AF"],
+  // repeated use of toLowerCase, better accomplished via a map
   ["Åland Islands".toLowerCase(), "AX"],
   ["Albania".toLowerCase(), "AL"],
   ["Algeria".toLowerCase(), "DZ"],
@@ -263,6 +264,7 @@ const countries = new Map<string, string>([
  * Field Validations
  */
 
+//I get that this is functional code as you like to write.  ensureValidEmail should be a cast Function or this validation should be included by default on an email field
 const ensureValidEmail = (
   value: string,
 ): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
@@ -297,6 +299,9 @@ const emailOrPhoneRequired = (record: FlatfileRecord) => {
   );
 };
 
+//are only US zipcodes zero padded?
+// we should add zero padding to stdlib, then have a compute function on ZipCodeField that optionally specifies format US
+// In some future smartfield world, we can dial with country and zip code together on an Address object
 const zipCodeZeroPadding = (record: FlatfileRecord) => {
   return pipe(
     Ap.sequenceT(E.Apply)(
@@ -341,7 +346,7 @@ const Leads = new FF.Sheet(
       description: "Lead's email.",
       unique: true,
       compute: (value) => value.toLowerCase(),
-      validate: (value) => {
+      validate: (value) => { // why not just `validate:ensureValidEmail` ?
         const isValidEmail = ensureValidEmail(value);
 
         return pipe(
@@ -361,7 +366,7 @@ const Leads = new FF.Sheet(
     country: FF.TextField({
       label: "Country",
       description: "Country goes here",
-      compute: (value) => {
+      compute: (value) => { // this is now handled better with SubstitutionCast and specifically CountryCast
         return pipe(
           M.lookup(Str.Eq)(value.toLowerCase())(countries),
           O.getOrElse(() => value),

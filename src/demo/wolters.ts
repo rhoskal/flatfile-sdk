@@ -11,6 +11,8 @@ import { sequenceValidationT } from "../utils";
  * Field Validations
  */
 
+
+// recommended field should be handled at the SDK level in some way
 const ensureRecommended = (
   value: unknown,
 ): E.Either<NEA.NonEmptyArray<FF.Message>, unknown> => {
@@ -19,6 +21,7 @@ const ensureRecommended = (
     : E.left([new FF.Message("Recommended field.", "warn", "validate")]);
 };
 
+//this is better handled with expression language once merged
 const ensureMonthlyPeriod = (
   value: number,
 ): E.Either<NEA.NonEmptyArray<FF.Message>, number> => {
@@ -29,6 +32,7 @@ const ensureMonthlyPeriod = (
       ]);
 };
 
+//this should be handled at the SDK level
 const ensureRegex =
   (regex: RegExp) =>
   (value: string): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
@@ -43,6 +47,7 @@ const ensureRegex =
         ]);
   };
 
+//this is better handled with expression language once merged
 const ensureMaxLength =
   (len: number) =>
   (value: string): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
@@ -69,7 +74,7 @@ const Journals = new FF.Sheet(
       required: true,
       validate: (value) => {
         const maxLen = ensureMaxLength(100)(value);
-
+	// can you explain why you pipe with this match function in your validation functions.  The code isn't obvious at first
         return pipe(sequenceValidationT(maxLen), E.match(identity, constVoid));
       },
     }),
@@ -89,7 +94,6 @@ const Journals = new FF.Sheet(
       label: "Source",
       validate: (value) => {
         const maxLen = ensureMaxLength(25)(value);
-
         return pipe(sequenceValidationT(maxLen), E.match(identity, constVoid));
       },
     }),
@@ -194,7 +198,7 @@ const Journals = new FF.Sheet(
     readOnly: true,
     recordCompute: (record: FlatfileRecord, _logger) => {
       const { debit_amount, credit_amount } = record.value;
-
+      // this should be a firstclass platform-sdk concept of two field conditional validation.  ned to figure out the syntax
       if (G.isNotNil(debit_amount)) {
         record.set("amount", debit_amount).set("credit_debit_indicator", "d");
       } else if (G.isNotNil(credit_amount)) {

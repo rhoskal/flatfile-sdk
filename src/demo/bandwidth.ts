@@ -63,7 +63,24 @@ const requiredFields = (record: FlatfileRecord) => {
   const transaction_type = record.get("transaction_type");
 
   // ignore possible `null` value when matching
+  // oof this is a mess.
+  // it looks like this is the equivalent of a union type in typescript jammed into a single table
+  //I would like the code to look something like this
 
+  ensureFits([
+    {transaction_type:"CANCEL", losing_carrier:Present()},
+    {transaction_type:["CHANGE", "NEW", "PORTIN"],
+     device_type:Present(), service_type:Present(), customer_type:Present(), first_name:Present(),
+    last_name:Present(), company_name:Present(),  transaction_type:Present(), street_name:Present(),
+    locality:Present(), post_code:Present()},
+    {customer_type:"BUS", company_name:Present()},
+    {customer_type:"RES", company_name:NotPresent()}])
+  //the above code is much more concise and clearly shows what's required and what isn't
+  // it looks like for ["CHANGE", "NEW", "PORTIN"] almost everything is required... then there are special cases
+  
+    
+    
+    
   if (G.isNil(losing_carrier)) {
     match(transaction_type as TransactionType)
       .with("CANCEL", () => {
@@ -99,6 +116,7 @@ const requiredFields = (record: FlatfileRecord) => {
       })
       .otherwise(() => {});
   }
+
 
   if (G.isNil(customer_type)) {
     match(transaction_type as TransactionType)
@@ -143,6 +161,7 @@ const requiredFields = (record: FlatfileRecord) => {
         record.addError("first_name", "Field is required.");
       });
   }
+
 
   if (G.isNil(last_name)) {
     match(customer_type as CustomerType).with("RES", () => {
@@ -216,6 +235,7 @@ const requiredFields = (record: FlatfileRecord) => {
       })
       .otherwise(() => {});
   }
+	     
 
   if (G.isNil(post_code)) {
     match(transaction_type as TransactionType)
