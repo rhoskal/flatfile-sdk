@@ -22,16 +22,18 @@ export const fold =
  *
  * @example
  * pipe(
- *   sequenceValidationT(validateEmail, maxLength),
+ *   sequenceValidationsT(ensureValidEmail, ensureMaxLength),
  *   E.match(identity, constVoid),
  * );
  */
-export const sequenceValidationT = Ap.sequenceT(
+const _sequenceValidationsT = Ap.sequenceT(
   E.getApplicativeValidation(NEA.getSemigroup<Message>()),
 );
 
+export type ValidationResult<T> = E.Either<NEA.NonEmptyArray<Message>, T>;
+
 /**
- * A wrapper around `sequenceValidationT` that conforms to the FF SDK
+ * A wrapper around `sequenceValidationsT` that conforms to the FF SDK
  * `validate()` return type. Runs all validation functions and accumulates
  * the errors.
  *
@@ -39,7 +41,11 @@ export const sequenceValidationT = Ap.sequenceT(
  * runValidations(fn1, fn2, fn3, ...);
  */
 export const runValidations = (
-  ...fns: [E.Either<NEA.NonEmptyArray<Message>, any>]
+  ...fns: Array<ValidationResult<any>>
 ): void | Array<Message> => {
-  return pipe(sequenceValidationT(...fns), E.match(identity, constVoid));
+  // Not interested in fighting the TS compiler here
+  return pipe(
+    _sequenceValidationsT(...(fns as any)),
+    E.match(identity, constVoid),
+  );
 };

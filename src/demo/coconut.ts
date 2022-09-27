@@ -6,11 +6,11 @@ import * as M from "fp-ts/Map";
 import * as NEA from "fp-ts/NonEmptyArray";
 import * as O from "fp-ts/Option";
 import * as Str from "fp-ts/string";
-import { constVoid, identity, pipe } from "fp-ts/function";
+import { Lazy, pipe } from "fp-ts/function";
 import * as t from "io-ts";
 
 import * as G from "../typeGuards";
-import { fold, sequenceValidationT } from "../utils";
+import { fold, runValidations } from "../utils";
 
 const countries = new Map<string, string>([
   ["Afghanistan".toLowerCase(), "AF"],
@@ -263,13 +263,13 @@ const countries = new Map<string, string>([
  * Field Validations
  */
 
-const ensureValidEmail = (
-  value: string,
-): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
-  return value.includes("@")
-    ? E.right(value)
-    : E.left([new FF.Message("Invalid email address.", "warn", "validate")]);
-};
+const validateEmail =
+  (value: string): Lazy<E.Either<NEA.NonEmptyArray<FF.Message>, string>> =>
+  () => {
+    return value.includes("@")
+      ? E.right(value)
+      : E.left([new FF.Message("Invalid email address.", "warn", "validate")]);
+  };
 
 /*
  * Record Hooks
@@ -342,12 +342,9 @@ const Leads = new FF.Sheet(
       unique: true,
       compute: (value) => value.toLowerCase(),
       validate: (value) => {
-        const isValidEmail = ensureValidEmail(value);
+        const ensureValidEmail = validateEmail(value);
 
-        return pipe(
-          sequenceValidationT(isValidEmail),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureValidEmail());
       },
     }),
     phone: FF.TextField({
@@ -392,12 +389,10 @@ const Leads = new FF.Sheet(
   {
     allowCustomFields: true,
     readOnly: true,
-    recordCompute: (record, _logger) => {
+    recordCompute: (record, _session, _logger) => {
       return fold(emailOrPhoneRequired, zipCodeZeroPadding)(record);
     },
-    batchRecordsCompute: async (_payload) => {
-      // make network req for countries
-    },
+    batchRecordsCompute: async (_payload, _session, _logger) => {},
   },
 );
 

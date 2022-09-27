@@ -3,11 +3,11 @@ import * as FF from "@flatfile/configure";
 import { FlatfileRecord } from "@flatfile/hooks";
 import * as E from "fp-ts/Either";
 import * as NEA from "fp-ts/NonEmptyArray";
-import { identity, constVoid, pipe } from "fp-ts/function";
+import { Lazy } from "fp-ts/function";
 import { match } from "ts-pattern";
 
 import * as G from "../typeGuards";
-import { fold, sequenceValidationT } from "../utils";
+import { fold, runValidations } from "../utils";
 
 /*
  * Types
@@ -20,9 +20,10 @@ type TransactionType = "CANCEL" | "CHANGE" | "INTERN" | "NEW" | "PORTIN";
  * Field Validations
  */
 
-const ensureMaxLength =
+const validateMaxLength =
   (len: number) =>
-  (value: string): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
+  (value: string): Lazy<E.Either<NEA.NonEmptyArray<FF.Message>, string>> =>
+  () => {
     return value.length <= len
       ? E.right(value)
       : E.left([
@@ -34,15 +35,15 @@ const ensureMaxLength =
         ]);
   };
 
-const ensureValidPostCode = (
-  value: string,
-): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
-  const re = /^([A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}|GIR\s?0A{2})$/g;
+const validatePostalCode =
+  (value: string): Lazy<E.Either<NEA.NonEmptyArray<FF.Message>, string>> =>
+  () => {
+    const re = /^([A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}|GIR\s?0A{2})$/g;
 
-  return re.test(value)
-    ? E.right(value)
-    : E.left([new FF.Message("Invalid post code.", "error", "validate")]);
-};
+    return re.test(value)
+      ? E.right(value)
+      : E.left([new FF.Message("Invalid post code.", "error", "validate")]);
+  };
 
 /*
  * Record Hooks
@@ -288,89 +289,65 @@ const EmergencyServices = new FF.Sheet(
     first_name: FF.TextField({
       label: "First Name",
       validate: (value) => {
-        const isMaxLength = ensureMaxLength(20)(value);
+        const ensureMaxLength = validateMaxLength(20)(value);
 
-        return pipe(
-          sequenceValidationT(isMaxLength),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureMaxLength());
       },
     }),
     last_name: FF.TextField({
       label: "Last Name",
       validate: (value) => {
-        const isMaxLength = ensureMaxLength(50)(value);
+        const ensureMaxLength = validateMaxLength(50)(value);
 
-        return pipe(
-          sequenceValidationT(isMaxLength),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureMaxLength());
       },
     }),
     title: FF.TextField({
       label: "Title",
       validate: (value) => {
-        const isMaxLength = ensureMaxLength(10)(value);
+        const ensureMaxLength = validateMaxLength(10)(value);
 
-        return pipe(
-          sequenceValidationT(isMaxLength),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureMaxLength());
       },
     }),
     company_name: FF.TextField({
       label: "Company Name",
       validate: (value) => {
-        const isMaxLength = ensureMaxLength(60)(value);
+        const ensureMaxLength = validateMaxLength(60)(value);
 
-        return pipe(
-          sequenceValidationT(isMaxLength),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureMaxLength());
       },
     }),
     house_name_or_number: FF.TextField({
       label: "House Name or Number",
       validate: (value) => {
-        const isMaxLength = ensureMaxLength(60)(value);
+        const ensureMaxLength = validateMaxLength(60)(value);
 
-        return pipe(
-          sequenceValidationT(isMaxLength),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureMaxLength());
       },
     }),
     street_name: FF.TextField({
       label: "Street Name",
       validate: (value) => {
-        const isMaxLength = ensureMaxLength(55)(value);
+        const ensureMaxLength = validateMaxLength(55)(value);
 
-        return pipe(
-          sequenceValidationT(isMaxLength),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureMaxLength());
       },
     }),
     locality: FF.TextField({
       label: "Locality",
       validate: (value) => {
-        const isMaxLength = ensureMaxLength(30)(value);
+        const ensureMaxLength = validateMaxLength(30)(value);
 
-        return pipe(
-          sequenceValidationT(isMaxLength),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureMaxLength());
       },
     }),
     post_code: FF.TextField({
       label: "Post Code",
       validate: (value) => {
-        const isValidPostCode = ensureValidPostCode(value);
+        const ensureValidPostalCode = validatePostalCode(value);
 
-        return pipe(
-          sequenceValidationT(isValidPostCode),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureValidPostalCode());
       },
     }),
   },

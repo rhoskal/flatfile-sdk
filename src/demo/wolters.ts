@@ -1,37 +1,36 @@
 import * as FF from "@flatfile/configure";
-import { FlatfileRecord } from "@flatfile/hooks";
 import * as E from "fp-ts/Either";
-import * as NEA from "fp-ts/NonEmptyArray";
-import { constVoid, identity, pipe } from "fp-ts/function";
+import { Lazy } from "fp-ts/function";
 
 import * as G from "../typeGuards";
-import { sequenceValidationT } from "../utils";
+import { runValidations, ValidationResult } from "../utils";
 
 /*
  * Field Validations
  */
 
-const ensureRecommended = (
-  value: unknown,
-): E.Either<NEA.NonEmptyArray<FF.Message>, unknown> => {
-  return G.isNotNil(value)
-    ? E.right(value)
-    : E.left([new FF.Message("Recommended field.", "warn", "validate")]);
-};
+const validateRecommended =
+  <T>(value: T): Lazy<ValidationResult<T>> =>
+  () => {
+    return G.isNotNil(value)
+      ? E.right(value)
+      : E.left([new FF.Message("Recommended field.", "warn", "validate")]);
+  };
 
-const ensureMonthlyPeriod = (
-  value: number,
-): E.Either<NEA.NonEmptyArray<FF.Message>, number> => {
-  return value >= 1 && value <= 12
-    ? E.right(value)
-    : E.left([
-        new FF.Message("Value must be between 1-12", "error", "validate"),
-      ]);
-};
+const validateMonthlyPeriod =
+  (value: number): Lazy<ValidationResult<number>> =>
+  () => {
+    return value >= 1 && value <= 12
+      ? E.right(value)
+      : E.left([
+          new FF.Message("Value must be between 1-12", "error", "validate"),
+        ]);
+  };
 
-const ensureRegex =
+const validateRegex =
   (regex: RegExp) =>
-  (value: string): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
+  (value: string): Lazy<ValidationResult<string>> =>
+  () => {
     return regex.test(value)
       ? E.right(value)
       : E.left([
@@ -43,9 +42,10 @@ const ensureRegex =
         ]);
   };
 
-const ensureMaxLength =
+const validateMaxLength =
   (len: number) =>
-  (value: string): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
+  (value: string): Lazy<ValidationResult<string>> =>
+  () => {
     return value.length <= len
       ? E.right(value)
       : E.left([
@@ -68,59 +68,50 @@ const Journals = new FF.Sheet(
       label: "Journal Id",
       required: true,
       validate: (value) => {
-        const maxLen = ensureMaxLength(100)(value);
+        const ensureMaxLength = validateMaxLength(100)(value);
 
-        return pipe(sequenceValidationT(maxLen), E.match(identity, constVoid));
+        return runValidations(ensureMaxLength());
       },
     }),
     je_line_description: FF.TextField({
       label: "Comment",
       validate: (value) => {
-        const maxLen = ensureMaxLength(256)(value);
-        const recommended = ensureRecommended(value);
+        const ensureMaxLength = validateMaxLength(100)(value);
+        const ensureRecommended = validateRecommended(value);
 
-        return pipe(
-          sequenceValidationT(maxLen, recommended),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureMaxLength(), ensureRecommended());
       },
     }),
     source: FF.TextField({
       label: "Source",
       validate: (value) => {
-        const maxLen = ensureMaxLength(25)(value);
+        const ensureMaxLength = validateMaxLength(25)(value);
 
-        return pipe(sequenceValidationT(maxLen), E.match(identity, constVoid));
+        return runValidations(ensureMaxLength());
       },
     }),
     effective_date: FF.DateField({
       label: "Document Date",
       validate: (value) => {
-        const isRecommended = ensureRecommended(value);
+        const ensureRecommended = validateRecommended(value);
 
-        return pipe(
-          sequenceValidationT(isRecommended),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureRecommended());
       },
     }),
     period: FF.NumberField({
       label: "Period",
       validate: (value) => {
-        const isMonthlyPeriod = ensureMonthlyPeriod(value);
+        const ensureMonthlyPeriod = validateMonthlyPeriod(value);
 
-        return pipe(
-          sequenceValidationT(isMonthlyPeriod),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureMonthlyPeriod());
       },
     }),
     gl_account_number: FF.TextField({
       label: "Account Number",
       validate: (value) => {
-        const maxLen = ensureMaxLength(100)(value);
+        const ensureMaxLength = validateMaxLength(25)(value);
 
-        return pipe(sequenceValidationT(maxLen), E.match(identity, constVoid));
+        return runValidations(ensureMaxLength());
       },
     }),
     debit_amount: FF.NumberField({
@@ -131,11 +122,11 @@ const Journals = new FF.Sheet(
     }),
     amount: FF.NumberField({
       label: "Amount",
-      // hiddenFrom: {
-      //   mapping: true,
-      //   review: false,
-      //   export: false,
-      // },
+      stageVisibility: {
+        mapping: false,
+        review: true,
+        export: true,
+      },
     }),
     credit_debit_indicator: FF.OptionField({
       label: "Credit or Debit",
@@ -143,11 +134,11 @@ const Journals = new FF.Sheet(
         c: "Credit",
         d: "Debit",
       },
-      // hiddenFrom: {
-      //   mapping: true,
-      //   review: false,
-      //   export: false,
-      // },
+      stageVisibility: {
+        mapping: false,
+        review: true,
+        export: true,
+      },
     }),
     amount_currency: FF.OptionField({
       label: "Amount Currency",
@@ -156,11 +147,11 @@ const Journals = new FF.Sheet(
         gbp: "GBP",
         usd: "USD",
       },
-      // hiddenFrom: {
-      //   mapping: true,
-      //   review: false,
-      //   export: false,
-      // },
+      stageVisibility: {
+        mapping: false,
+        review: true,
+        export: true,
+      },
     }),
     entered_by: FF.TextField({
       label: "Posted By",
@@ -180,19 +171,16 @@ const Journals = new FF.Sheet(
         }
       },
       validate: (value) => {
-        const isMilitaryTime = ensureRegex(/^\d{4}$/g)(value);
+        const ensureMilitaryTime = validateRegex(/^\d{4}$/g)(value);
 
-        return pipe(
-          sequenceValidationT(isMilitaryTime),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureMilitaryTime());
       },
     }),
   },
   {
     allowCustomFields: true,
     readOnly: true,
-    recordCompute: (record: FlatfileRecord, _logger) => {
+    recordCompute: (record, _session, _logger) => {
       const { debit_amount, credit_amount } = record.value;
 
       if (G.isNotNil(debit_amount)) {
@@ -207,7 +195,7 @@ const Journals = new FF.Sheet(
 
       return record;
     },
-    batchRecordsCompute: async (_payload) => {},
+    batchRecordsCompute: async (_payload, _session, _logger) => {},
   },
 );
 

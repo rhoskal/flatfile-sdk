@@ -836,11 +836,11 @@ const Securities = new FF.Sheet(
       label: "CUSIP + Name",
       description: "Some description",
       unique: true,
-      // hiddenFrom: {
-      //   mapping: true,
-      //   review: false,
-      //   export: false,
-      // },
+      stageVisibility: {
+        mapping: true,
+        review: false,
+        export: false,
+      },
     }),
     issuer: FF.TextField({
       label: "Issuer",

@@ -3,67 +3,71 @@ import { FlatfileRecord } from "@flatfile/hooks";
 import * as Ap from "fp-ts/Apply";
 import * as E from "fp-ts/Either";
 import * as NEA from "fp-ts/NonEmptyArray";
-import { constVoid, identity, pipe } from "fp-ts/function";
+import { Lazy, pipe } from "fp-ts/function";
 import { match } from "ts-pattern";
 import * as datefns from "date-fns";
 import * as t from "io-ts";
 
-import { fold, sequenceValidationT } from "../utils";
 import * as G from "../typeGuards";
+import { fold, runValidations } from "../utils";
 
 /*
  * Field Validations
  */
 
-const ensureValidSsn = (
-  value: string,
-): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
-  const re = /^(?!(000|666|9))\d{3}-(?!00)\d{2}-(?!0000)\d{4}$/g;
-  // const re = /^(?!000|666)[0-8][0-9]{2}-(?!00)[0-9]{2}-(?!0000)[0-9]{4}$/g;
+const validateSsn =
+  (value: string): Lazy<E.Either<NEA.NonEmptyArray<FF.Message>, string>> =>
+  () => {
+    const re = /^(?!(000|666|9))\d{3}-(?!00)\d{2}-(?!0000)\d{4}$/g;
+    // const re = /^(?!000|666)[0-8][0-9]{2}-(?!00)[0-9]{2}-(?!0000)[0-9]{4}$/g;
 
-  return re.test(value)
-    ? E.right(value)
-    : E.left([new FF.Message("Invalid SSN format.", "warn", "validate")]);
-};
+    return re.test(value)
+      ? E.right(value)
+      : E.left([new FF.Message("Invalid SSN format.", "warn", "validate")]);
+  };
 
-const ensureValidVin = (
-  value: string,
-): E.Either<NEA.NonEmptyArray<FF.Message>, string> => {
-  const alphaNumeric = /^[A-Z0-9]{1,17}$/g;
-  const exclude = /^[^IOQUZ]+$/g;
+const validateVin =
+  (value: string): Lazy<E.Either<NEA.NonEmptyArray<FF.Message>, string>> =>
+  () => {
+    const alphaNumeric = /^[A-Z0-9]{1,17}$/g;
+    const exclude = /^[^IOQUZ]+$/g;
 
-  return alphaNumeric.test(value) && exclude.test(value)
-    ? E.right(value)
-    : E.left([new FF.Message("Invalid VIN format.", "warn", "validate")]);
-};
+    return alphaNumeric.test(value) && exclude.test(value)
+      ? E.right(value)
+      : E.left([new FF.Message("Invalid VIN format.", "warn", "validate")]);
+  };
 
-const ensureNoFutureDate = (
-  value: Date,
-): E.Either<NEA.NonEmptyArray<FF.Message>, Date> => {
-  return G.isFalsy(datefns.isFuture(value))
-    ? E.right(value)
-    : E.left([
-        new FF.Message("Date cannot be in the future.", "warn", "validate"),
-      ]);
-};
+const validateNoFutureDate =
+  (value: Date): Lazy<E.Either<NEA.NonEmptyArray<FF.Message>, Date>> =>
+  () => {
+    return G.isFalsy(datefns.isFuture(value))
+      ? E.right(value)
+      : E.left([
+          new FF.Message("Date cannot be in the future.", "warn", "validate"),
+        ]);
+  };
 
-const ensureNonNegative = (
-  value: number,
-): E.Either<NEA.NonEmptyArray<FF.Message>, number> => {
-  return value >= 0
-    ? E.right(value)
-    : E.left([new FF.Message("Must be a positive value.", "warn", "validate")]);
-};
+const validatePositive =
+  (value: number): Lazy<E.Either<NEA.NonEmptyArray<FF.Message>, number>> =>
+  () => {
+    return value >= 0
+      ? E.right(value)
+      : E.left([
+          new FF.Message("Must be a positive value.", "warn", "validate"),
+        ]);
+  };
 
-const ensureValidManufactureYear = (
-  value: number,
-): E.Either<NEA.NonEmptyArray<FF.Message>, number> => {
-  const currentYear: number = new Date().getFullYear();
+const validateManufactureYear =
+  (value: number): Lazy<E.Either<NEA.NonEmptyArray<FF.Message>, number>> =>
+  () => {
+    const currentYear: number = new Date().getFullYear();
 
-  return value >= 1940 && value <= currentYear + 1
-    ? E.right(value)
-    : E.left([new FF.Message("Invalid manufacture year.", "warn", "validate")]);
-};
+    return value >= 1940 && value <= currentYear + 1
+      ? E.right(value)
+      : E.left([
+          new FF.Message("Invalid manufacture year.", "warn", "validate"),
+        ]);
+  };
 
 /*
  * Record Hooks
@@ -124,12 +128,9 @@ const Assets = new FF.Sheet(
         return value.trim().toUpperCase();
       },
       validate: (value) => {
-        const isValidVin = ensureValidVin(value);
+        const ensureValidVin = validateVin(value);
 
-        return pipe(
-          sequenceValidationT(isValidVin),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureValidVin());
       },
     }),
     client_unit_number: FF.TextField({
@@ -173,12 +174,9 @@ const Assets = new FF.Sheet(
       label: "Year of Manufacture",
       required: true,
       validate: (value) => {
-        const isValidManufactureYear = ensureValidManufactureYear(value);
+        const ensureValidManufactureYear = validateManufactureYear(value);
 
-        return pipe(
-          sequenceValidationT(isValidManufactureYear),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureValidManufactureYear());
       },
     }),
     manufacturer: FF.OptionField({
@@ -193,36 +191,27 @@ const Assets = new FF.Sheet(
       label: "Licensed Weight",
       required: true,
       validate: (value) => {
-        const isNonNegative = ensureNonNegative(value);
+        const ensurePositive = validatePositive(value);
 
-        return pipe(
-          sequenceValidationT(isNonNegative),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensurePositive());
       },
     }),
     actual_cgvw: FF.NumberField({
       label: "Actual CGVW",
       required: true,
       validate: (value) => {
-        const isNonNegative = ensureNonNegative(value);
+        const ensurePositive = validatePositive(value);
 
-        return pipe(
-          sequenceValidationT(isNonNegative),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensurePositive());
       },
     }),
     empty_weight: FF.NumberField({
       label: "Empty Weight",
       required: true,
       validate: (value) => {
-        const isNonNegative = ensureNonNegative(value);
+        const ensurePositive = validatePositive(value);
 
-        return pipe(
-          sequenceValidationT(isNonNegative),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensurePositive());
       },
     }),
     number_of_axles: FF.NumberField({
@@ -261,12 +250,9 @@ const People = new FF.Sheet(
       unique: true,
       compute: (value) => value.trim(),
       validate: (value) => {
-        const isValidSsn = ensureValidSsn(value);
+        const ensureValidSsn = validateSsn(value);
 
-        return pipe(
-          sequenceValidationT(isValidSsn),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureValidSsn());
       },
     }),
     person_number: FF.NumberField({
@@ -289,12 +275,9 @@ const People = new FF.Sheet(
       label: "Date of Birth",
       required: true,
       validate: (value) => {
-        const noFutureDate = ensureNoFutureDate(value);
+        const ensureNoFutureDate = validateNoFutureDate(value);
 
-        return pipe(
-          sequenceValidationT(noFutureDate),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureNoFutureDate());
       },
     }),
     person_status: FF.OptionField({
@@ -315,12 +298,9 @@ const People = new FF.Sheet(
       label: "Join Date",
       required: true,
       validate: (value) => {
-        const noFutureDate = ensureNoFutureDate(value);
+        const ensureNoFutureDate = validateNoFutureDate(value);
 
-        return pipe(
-          sequenceValidationT(noFutureDate),
-          E.match(identity, constVoid),
-        );
+        return runValidations(ensureNoFutureDate());
       },
     }),
     email: FF.TextField({
