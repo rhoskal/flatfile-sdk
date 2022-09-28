@@ -283,7 +283,7 @@ const PropertiesSheet = new FF.Sheet(
     owner1_percent: FF.NumberField({
       label: "Percentage (Owner #1)",
       description:
-        "Owner percentages must total 100%.\n" +
+        "Owner percentages must total 100%.\n\n" +
         "You can have one owner at 100% and a second owner at 0%. Since a Tax ID (SSN) can only belong to one individual enter in 100% for the owner whose Tax ID you have on file and enter " +
         "in 0% for the spouse or business partner.",
       default: 0,
@@ -305,7 +305,7 @@ const PropertiesSheet = new FF.Sheet(
     owner2_percent: FF.NumberField({
       label: "Percentage (Owner #2)",
       description:
-        "Owner percentages must total 100%.\n" +
+        "Owner percentages must total 100%.\n\n" +
         "You can have one owner at 100% and a second owner at 0%. Since a Tax ID (SSN) can only belong to one individual enter in 100% for the owner whose Tax ID you have on file and enter " +
         "in 0% for the spouse or business partner.",
       default: 0,
@@ -328,14 +328,11 @@ const PropertiesSheet = new FF.Sheet(
 
 const BanksPortal = new FF.Portal({
   name: "Banks (Appfolio) - NewNew",
-  helpContent: `# Banks
-
-     ![embed image test](https://cdn.brandfolder.io/1TPX6JVS/at/n8x4ppp94tc6vq3j2pjgggpk/APM-Primary-Logo.svg)
-
-     Some example markdown
-
-     - List item 1
-     - List item 2`,
+  helpContent:
+    "# Properties\n\n" +
+    "![embed image test](https://cdn.brandfolder.io/1TPX6JVS/at/n8x4ppp94tc6vq3j2pjgggpk/APM-Primary-Logo.svg)\n\n" +
+    "Some example markdown\n\n" +
+    "- List item 1\n- List item 2",
   sheet: "BanksSheet",
 });
 
