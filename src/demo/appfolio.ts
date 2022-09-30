@@ -9,7 +9,7 @@ import { Lazy, pipe } from "fp-ts/function";
 import * as Str from "fp-ts/string";
 import * as t from "io-ts";
 
-import { fold, runValidations } from "../utils";
+import { fold, runValidations, ValidationResult } from "../utils";
 
 /*
  * Field Validations
@@ -17,7 +17,7 @@ import { fold, runValidations } from "../utils";
 
 const validateRangeInclusive =
   (min: number, max: number) =>
-  (value: number): Lazy<E.Either<NEA.NonEmptyArray<FF.Message>, number>> =>
+  (value: number): Lazy<ValidationResult<number>> =>
   () => {
     return value >= min && value <= max
       ? E.right(value)
@@ -31,7 +31,7 @@ const validateRangeInclusive =
   };
 
 const validatePositive =
-  (value: number): Lazy<E.Either<NEA.NonEmptyArray<FF.Message>, number>> =>
+  (value: number): Lazy<ValidationResult<number>> =>
   () => {
     return value >= 0
       ? E.right(value)
