@@ -2,6 +2,7 @@ import * as FF from "@flatfile/configure";
 import { FlatfileRecord } from "@flatfile/hooks";
 import * as Ap from "fp-ts/Apply";
 import * as E from "fp-ts/Either";
+import * as RA from "fp-ts/ReadonlyArray";
 import { Lazy, pipe } from "fp-ts/function";
 import * as Str from "fp-ts/string";
 import * as t from "io-ts";
@@ -31,7 +32,7 @@ const validateMaxLength =
  * Record Hooks
  */
 
-const x = (record: FlatfileRecord) => {
+const x = (record: FlatfileRecord): FlatfileRecord => {
   return pipe(
     Ap.sequenceS(E.Apply)({
       foo: t.string.decode(record.get("foo")),
@@ -48,24 +49,34 @@ const x = (record: FlatfileRecord) => {
   );
 };
 
-const removeSpecialCharacters = (value: string) => {
+const removeSpecialCharacters = (value: string): string => {
   return Str.replace(/[*;/{}\[\]"_#'^><|]/g, "")(value);
 };
 
-const removeExtraSpaces = (value: string) => {
+const removeExtraSpaces = (value: string): string => {
   return Str.replace(/\s{2,}/g, " ")(value);
 };
 
-const toUppercase = (value: string) => {
+const toUppercase = (value: string): string => {
   return Str.toUpperCase(value);
 };
 
-const trim = (value: string) => {
+const trim = (value: string): string => {
   return Str.trim(value);
 };
 
-const replaceLanguageChars = (value: string) => {
-  return Str.replace(/ç/g, "c")(value);
+const replaceLanguageChars = (value: string): string => {
+  return pipe(
+    Str.split("")(value),
+    RA.map((char) => {
+      if (Str.Eq.equals(char, "ç")) {
+        return "c";
+      } else {
+        return char;
+      }
+    }),
+    (chars) => chars.join(""),
+  );
 };
 
 /*
