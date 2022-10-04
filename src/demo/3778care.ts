@@ -84,7 +84,7 @@ const replaceLanguageChars = (value: string): string => {
  */
 
 const XSheet = new FF.Sheet(
-  "X (3778)",
+  "X (3778.care)",
   {
     foo: FF.TextField({
       label: "",
@@ -113,17 +113,17 @@ const XSheet = new FF.Sheet(
 );
 
 const XPortal = new FF.Portal({
-  name: "X (3778)",
+  name: "X (3778.care)",
   helpContent: "",
   sheet: "",
 });
 
 const workbook = new FF.Workbook({
-  name: "Workbook - 3778 Demo",
-  namespace: "Y",
+  name: "Workbook - 3778.care Demo",
+  namespace: "3778.care",
   portals: [XPortal],
   sheets: {
-    X,
+    XSheet,
   },
 });
 

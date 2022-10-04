@@ -63,6 +63,14 @@ const validateRegex =
         ]);
   };
 
+const validatePositive =
+  (value: number): Lazy<ValidationResult<number>> =>
+  () => {
+    return value >= 0
+      ? E.right(value)
+      : E.left([new FF.Message("Value must be positive", "error", "validate")]);
+  };
+
 /*
  * Main
  */
@@ -205,8 +213,9 @@ const ProductsSheet = new FF.Sheet(
       compute: (value) => pipe(value, Str.trim),
       validate: (value) => {
         const ensureMaxLength = validateMaxLength(650)(value);
+        const ensureNoSpaces = validateRegex(/[^ ]+/g)(value);
 
-        return runValidations(ensureMaxLength());
+        return runValidations(ensureMaxLength(), ensureNoSpaces());
       },
     }),
     description: FF.TextField({
@@ -221,6 +230,8 @@ const ProductsSheet = new FF.Sheet(
     }),
     category: FF.TextField({
       label: "Category",
+      description:
+        "The product's inventory classification. To indicate a hierarchy, use the greater than (>) symbol as a delimiter between categories.",
       required: true,
       compute: (value) => pipe(value, Str.trim),
       validate: (value) => {
@@ -241,6 +252,7 @@ const ProductsSheet = new FF.Sheet(
     }),
     upc_or_ean: FF.TextField({
       label: "UPC or EAN",
+      description: "The 12-digit UPC or 13-digit EAN.",
       required: true,
       validate: (value) => {
         const ensureUpcOrEan = validateRegex(/\d{12,13}+/g)(value);
@@ -251,6 +263,18 @@ const ProductsSheet = new FF.Sheet(
     manufacturer_id: FF.TextField({
       label: "Manufacturer Id",
       required: true,
+    }),
+    in_stock: FF.BooleanField({
+      label: "In Stock?",
+    }),
+    price: FF.NumberField({
+      label: "Price",
+      compute: (value) => value,
+      validate: (value) => {
+        const ensureIsPositive = validatePositive(value);
+
+        return runValidations(ensureIsPositive());
+      },
     }),
   },
   {
