@@ -73,7 +73,7 @@ const validateManufactureYear =
  * Record Hooks
  */
 
-const grossVehicleWeightCheck = (record: FlatfileRecord) => {
+const grossVehicleWeightCheck = (record: FlatfileRecord): FlatfileRecord => {
   return pipe(
     Ap.sequenceS(E.Apply)({
       asset_type: t.string.decode(record.get("asset_type")),

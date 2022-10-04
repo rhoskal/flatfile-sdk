@@ -42,7 +42,7 @@ const validatePositive =
  * Record Hooks
  */
 
-const balancedOwnerPercentages = (record: FlatfileRecord) => {
+const balancedOwnerPercentages = (record: FlatfileRecord): FlatfileRecord => {
   return pipe(
     Ap.sequenceS(E.Apply)({
       owner1_percent: t.number.decode(record.get("owner1_percent")),
@@ -64,7 +64,7 @@ const balancedOwnerPercentages = (record: FlatfileRecord) => {
   );
 };
 
-const checkCorrespondingRTN = (record: FlatfileRecord) => {
+const checkCorrespondingRTN = (record: FlatfileRecord): FlatfileRecord => {
   return pipe(
     Ap.sequenceS(E.Apply)({
       bank_name: t.string.decode(record.get("bank_name")),

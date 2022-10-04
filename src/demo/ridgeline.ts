@@ -740,7 +740,7 @@ const apiResponse: ApiResponse = {
  * Record Hooks
  */
 
-const compositeUniquenessCheck = (record: FlatfileRecord) => {
+const compositeUniquenessCheck = (record: FlatfileRecord): FlatfileRecord => {
   return pipe(
     Ap.sequenceS(E.Apply)({
       cusip: t.string.decode(record.get("cusip")),
@@ -891,8 +891,10 @@ const Securities = new FF.Sheet(
       label: "Effective Date",
       description: "Some description",
       compute: (value) => {
-        if (datefns.isDate(value)) {
-          return datefns.format(new Date(value), "yyyy-MM-dd");
+        const possibleDate = new Date(value);
+
+        if (datefns.isDate(possibleDate)) {
+          return datefns.format(possibleDate, "yyyy-MM-dd");
         } else {
           return value;
         }

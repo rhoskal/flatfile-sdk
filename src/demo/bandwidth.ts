@@ -49,7 +49,7 @@ const validatePostalCode =
  * Record Hooks
  */
 
-const requiredFields = (record: FlatfileRecord) => {
+const requiredFields = (record: FlatfileRecord): FlatfileRecord => {
   const company_name = record.get("company_name");
   const customer_type = record.get("customer_type");
   const device_type = record.get("device_type");

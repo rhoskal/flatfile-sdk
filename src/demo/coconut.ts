@@ -275,7 +275,7 @@ const validateEmail =
  * Record Hooks
  */
 
-const emailOrPhoneRequired = (record: FlatfileRecord) => {
+const emailOrPhoneRequired = (record: FlatfileRecord): FlatfileRecord => {
   return pipe(
     Ap.sequenceT(O.Apply)(
       O.fromNullable(() => record.get("email")),
@@ -297,7 +297,7 @@ const emailOrPhoneRequired = (record: FlatfileRecord) => {
   );
 };
 
-const zipCodeZeroPadding = (record: FlatfileRecord) => {
+const zipCodeZeroPadding = (record: FlatfileRecord): FlatfileRecord => {
   return pipe(
     Ap.sequenceT(E.Apply)(
       t.string.decode(record.get("postal_code")),
