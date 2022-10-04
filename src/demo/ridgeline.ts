@@ -891,11 +891,9 @@ const Securities = new FF.Sheet(
       label: "Effective Date",
       description: "Some description",
       compute: (value) => {
-        const possibleDate = new Date(value);
-
-        if (datefns.isDate(possibleDate)) {
-          return datefns.format(possibleDate, "yyyy-MM-dd");
-        } else {
+        try {
+          return datefns.format(new Date(value), "yyyy-MM-dd");
+        } catch (err) {
           return value;
         }
       },
