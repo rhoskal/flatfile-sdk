@@ -1,12 +1,12 @@
 import * as FF from "@flatfile/configure";
 import { FlatfileRecord } from "@flatfile/hooks";
-import * as Ap from "fp-ts/Apply";
 import * as E from "fp-ts/Either";
 import * as RA from "fp-ts/ReadonlyArray";
 import { Lazy, pipe } from "fp-ts/function";
 import * as Str from "fp-ts/string";
-import * as t from "io-ts";
+import * as datefns from "date-fns";
 
+import * as G from "../typeGuards";
 import { fold, runValidations, ValidationResult } from "../utils";
 
 /*
@@ -32,24 +32,30 @@ const validateMaxLength =
  * Record Hooks
  */
 
-const x = (record: FlatfileRecord): FlatfileRecord => {
-  return pipe(
-    Ap.sequenceS(E.Apply)({
-      foo: t.string.decode(record.get("foo")),
-      bar: t.string.decode(record.get("bar")),
-    }),
-    E.match(
-      () => record,
-      ({ foo, bar }) => {
-        // logic
+const checkForOneOrTheOther =
+  (
+    field1: { key: string; label: string },
+    field2: { key: string; label: string },
+  ) =>
+  (record: FlatfileRecord): FlatfileRecord => {
+    const value1 = record.get(field1.key);
+    const value2 = record.get(field2.key);
 
-        return record;
-      },
-    ),
-  );
-};
+    if (G.isNil(value1) && G.isNil(value2)) {
+      record.addError(
+        [field1.key, field2.key],
+        `Must provide one of: ${field1.label} or ${field2.label}`,
+      );
+    }
 
-const removeSpecialCharacters = (value: string): string => {
+    return record;
+  };
+
+/*
+ * Helpers
+ */
+
+const removeSymbols = (value: string): string => {
   return Str.replace(/[*;/{}\[\]"_#'^><|]/g, "")(value);
 };
 
@@ -69,53 +75,147 @@ const replaceLanguageChars = (value: string): string => {
   return pipe(
     Str.split("")(value),
     RA.map((char) => {
-      if (Str.Eq.equals(char, "ç")) {
-        return "c";
-      } else {
-        return char;
-      }
+      return Str.Eq.equals(char, "ç") ? "c" : char;
     }),
     (chars) => chars.join(""),
   );
 };
 
+const formatDate =
+  (format: string) =>
+  (value: string): string => {
+    try {
+      return datefns.format(new Date(value), format);
+    } catch (err) {
+      return value;
+    }
+  };
+
 /*
  * Main
  */
 
-const XSheet = new FF.Sheet(
-  "X (3778.care)",
+const PeopleSheet = new FF.Sheet(
+  "People (3778.care)",
   {
-    foo: FF.TextField({
-      label: "",
+    unit_code: FF.TextField({
+      label: "Código da unidade",
+      description: "Unit Code",
+    }),
+    unit_name: FF.TextField({
+      label: "Nome da unidade",
+      description: "Unit Name",
+    }),
+    function_code: FF.TextField({
+      label: "Código de função",
+      description: "Function Code",
+    }),
+    job_name: FF.TextField({
+      label: "Nome do trabalho",
+      description: "Job Name",
+    }),
+    department_code: FF.TextField({
+      label: "Código do departamento",
+      description: "Department Code",
+    }),
+    department_name: FF.TextField({
+      label: "Nome do departamento",
+      description: "Department Name",
+    }),
+    employee_code: FF.TextField({
+      label: "Código de empregado",
+      description: "Employee Code",
+      required: true,
+    }),
+    employee_name: FF.TextField({
+      label: "Nome do empregado",
+      description: "Employee Name",
       required: true,
       compute: (value) => {
-        return pipe(value, trim, removeSpecialCharacters, removeExtraSpaces);
+        return pipe(value, trim, removeSymbols, removeExtraSpaces);
       },
-    }),
-    bar: FF.TextField({
-      label: "",
       validate: (value) => {
         const ensureMaxLength = validateMaxLength(999)(value);
 
         return runValidations(ensureMaxLength());
       },
     }),
+    gender: FF.OptionField({
+      label: "Gênero",
+      description: "Gender",
+      required: true,
+      options: {
+        F: "Female",
+        M: "Male",
+      },
+    }),
+    dob: FF.TextField({
+      label: "Data de nascimento",
+      description: "Date of Birth",
+      required: true,
+      compute: formatDate("dd/MM/yyyy"),
+    }),
+    admission_date: FF.TextField({
+      label: "Data de admissão",
+      description: "Admission Date",
+      required: true,
+      compute: formatDate("dd/MM/yyyy"),
+    }),
+    status: FF.TextField({
+      label: "Estado", // Situação (Situation)??
+      description: "Status",
+      required: true,
+    }),
+    blood_type: FF.OptionField({
+      label: "Tipo Sanguíneo",
+      description: "Blood Type",
+      options: {
+        NONE: "NONE",
+        "A+": "A+",
+        "B+": "B+",
+        "B-": "B-",
+        "AB+": "AB+",
+        "AB-": "AB-",
+        "O+": "O+",
+        "THE-": "THE-",
+      },
+    }),
+    disregard_esocial: FF.BooleanField({
+      label: "Desconsiderar para o eSocial",
+      description: "Disregard for eSocial",
+    }),
   },
   {
     allowCustomFields: true,
     readOnly: true,
     recordCompute: (record, _session, _logger) => {
-      return fold(x)(record);
+      return fold(
+        checkForOneOrTheOther(
+          { key: "unit_code", label: "Código da unidade" },
+          { key: "unit_name", label: "Nome da unidade" },
+        ),
+        checkForOneOrTheOther(
+          { key: "function_code", label: "Código de função" },
+          { key: "job_name", label: "Nome do trabalho" },
+        ),
+        checkForOneOrTheOther(
+          { key: "department_code", label: "Código do departamento" },
+          { key: "department_name", label: "Nome do departamento" },
+        ),
+        checkForOneOrTheOther(
+          { key: "employee_code", label: "Código de empregado" },
+          { key: "employee_name", label: "Nome do empregado" },
+        ),
+      )(record);
     },
     batchRecordsCompute: async (_payload, _session, _logger) => {},
   },
 );
 
 const XPortal = new FF.Portal({
-  name: "X (3778.care)",
+  name: "People (3778.care)",
   helpContent: "",
-  sheet: "",
+  sheet: "PeopleSheet",
 });
 
 const workbook = new FF.Workbook({
@@ -123,7 +223,7 @@ const workbook = new FF.Workbook({
   namespace: "3778.care",
   portals: [XPortal],
   sheets: {
-    XSheet,
+    PeopleSheet,
   },
 });
 

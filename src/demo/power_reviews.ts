@@ -41,7 +41,7 @@ const validateRangeInclusive =
       ? E.right(value)
       : E.left([
           new FF.Message(
-            `Value must be between ${min} and ${max}`,
+            `Value must be between ${min} and ${max}.`,
             "error",
             "validate",
           ),
@@ -56,7 +56,7 @@ const validateRegex =
       ? E.right(value)
       : E.left([
           new FF.Message(
-            "Value does not meet required format",
+            "Value does not meet required format.",
             "warn",
             "validate",
           ),
@@ -68,7 +68,9 @@ const validatePositive =
   () => {
     return value >= 0
       ? E.right(value)
-      : E.left([new FF.Message("Value must be positive", "error", "validate")]);
+      : E.left([
+          new FF.Message("Value must be positive.", "error", "validate"),
+        ]);
   };
 
 /*
