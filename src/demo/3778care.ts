@@ -44,7 +44,7 @@ const checkForOneOrTheOther =
     if (G.isNil(value1) && G.isNil(value2)) {
       record.addError(
         [field1.key, field2.key],
-        `Must provide one of: ${field1.label} or ${field2.label}`,
+        `Must provide one of: ${field1.label} or ${field2.label}.`,
       );
     }
 
@@ -63,7 +63,7 @@ const removeExtraSpaces = (value: string): string => {
   return Str.replace(/\s{2,}/g, " ")(value);
 };
 
-const toUppercase = (value: string): string => {
+const toUpperCase = (value: string): string => {
   return Str.toUpperCase(value);
 };
 
@@ -75,7 +75,7 @@ const replaceLanguageChars = (value: string): string => {
   return pipe(
     Str.split("")(value),
     RA.map((char) => {
-      return Str.Eq.equals(char, "ç") ? "c" : char;
+      return Str.Eq.equals(Str.toLowerCase(char), "ç") ? "c" : char;
     }),
     (chars) => chars.join(""),
   );
@@ -101,41 +101,119 @@ const PeopleSheet = new FF.Sheet(
     unit_code: FF.TextField({
       label: "Código da unidade",
       description: "Unit Code",
+      compute: (value) => {
+        return pipe(
+          value,
+          trim,
+          removeSymbols,
+          removeExtraSpaces,
+          replaceLanguageChars,
+          toUpperCase,
+        );
+      },
     }),
     unit_name: FF.TextField({
       label: "Nome da unidade",
       description: "Unit Name",
+      compute: (value) => {
+        return pipe(
+          value,
+          trim,
+          removeSymbols,
+          removeExtraSpaces,
+          replaceLanguageChars,
+          toUpperCase,
+        );
+      },
     }),
     function_code: FF.TextField({
       label: "Código de função",
       description: "Function Code",
+      compute: (value) => {
+        return pipe(
+          value,
+          trim,
+          removeSymbols,
+          removeExtraSpaces,
+          replaceLanguageChars,
+          toUpperCase,
+        );
+      },
     }),
     job_name: FF.TextField({
       label: "Nome do trabalho",
       description: "Job Name",
+      compute: (value) => {
+        return pipe(
+          value,
+          trim,
+          removeSymbols,
+          removeExtraSpaces,
+          replaceLanguageChars,
+          toUpperCase,
+        );
+      },
     }),
     department_code: FF.TextField({
       label: "Código do departamento",
       description: "Department Code",
+      compute: (value) => {
+        return pipe(
+          value,
+          trim,
+          removeSymbols,
+          removeExtraSpaces,
+          replaceLanguageChars,
+          toUpperCase,
+        );
+      },
     }),
     department_name: FF.TextField({
       label: "Nome do departamento",
       description: "Department Name",
+      compute: (value) => {
+        return pipe(
+          value,
+          trim,
+          removeSymbols,
+          removeExtraSpaces,
+          replaceLanguageChars,
+          toUpperCase,
+        );
+      },
     }),
     employee_code: FF.TextField({
       label: "Código de empregado",
       description: "Employee Code",
       required: true,
+      compute: (value) => {
+        return pipe(
+          value,
+          trim,
+          removeSymbols,
+          removeExtraSpaces,
+          replaceLanguageChars,
+          toUpperCase,
+        );
+      },
     }),
     employee_name: FF.TextField({
       label: "Nome do empregado",
       description: "Employee Name",
       required: true,
       compute: (value) => {
-        return pipe(value, trim, removeSymbols, removeExtraSpaces);
+        return pipe(
+          value,
+          trim,
+          removeSymbols,
+          removeExtraSpaces,
+          replaceLanguageChars,
+          toUpperCase,
+        );
       },
       validate: (value) => {
-        const ensureMaxLength = validateMaxLength(999)(value);
+        // actual is 999, but that's hard to demo
+        const ensureMaxLength = validateMaxLength(10)(value);
 
         return runValidations(ensureMaxLength());
       },
@@ -161,10 +239,22 @@ const PeopleSheet = new FF.Sheet(
       required: true,
       compute: formatDate("dd/MM/yyyy"),
     }),
-    status: FF.TextField({
-      label: "Estado", // Situação (Situation)??
+    status: FF.OptionField({
+      label: "Situação",
       description: "Status",
       required: true,
+      options: {
+        // A for Away
+        // F for vacation
+        // N for Inactive
+        // P for Pending
+        // Y for Asset
+        A: "Afastado",
+        F: "Férias",
+        N: "Inativo",
+        P: "Pendente",
+        Y: "Ativo",
+      },
     }),
     blood_type: FF.OptionField({
       label: "Tipo Sanguíneo",
