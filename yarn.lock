@@ -44,9 +44,9 @@
     tsup "^6.1.3"
 
 "@flatfile/configure@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@flatfile/configure/-/configure-0.4.0.tgz#3f949577a5e144cf4935e622c2709bd1133c3105"
-  integrity sha512-TW/zpWSNLxwwWkgflryyanwp6jP43LP0QMuTBx2UlenGMcwx0IlzQMfWwydLuGFGN5e9huttdcPa+SEHVZOQmg==
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@flatfile/configure/-/configure-0.4.1.tgz#d1be0d693ab5656a6e18b89569acf06f762f2c24"
+  integrity sha512-GW41g/B8gHpMXvcNwWv5Iuq6eVmWdlaHY5Hx/Yd3phCb48ADarKyguNYzJNlgFXs/PaD03cMnkIl0dn98cLGQQ==
   dependencies:
     "@flatfile/orm" "*"
     "@flatfile/schema" "*"
@@ -66,9 +66,9 @@
   integrity sha512-eS8BjNs/tEsyP8Iw84hX6gzBi6H/tzmxn2fvpZ7dcrfDtyhc5k2YbetZbY4NdOg8d6YPQT8hiplXs9bwMPutxw==
 
 "@flatfile/schema@*":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@flatfile/schema/-/schema-0.1.4.tgz#450eb9483b843f69f02a9d14e8eba466c559ce22"
-  integrity sha512-uMT0Efbxm/1ggNArEY8mJXC6DrXg6i57cyQnyQVMzek+9WwF/nUeakfa5GLL7lYmxe1LHnD7ZO99MKR3tARq7Q==
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@flatfile/schema/-/schema-0.2.1.tgz#63c407eb07729677a013551c51c542b76bf0b531"
+  integrity sha512-IoWrZfGG35vk2ONTBtbF8usRuf4ocQVeS7fOlLs4nP1Vr7JJFoob4D4qL1FJN3/bV7jJpiG0borl4wP5EOx8iQ==
   dependencies:
     lodash "^4.17.21"
     remeda "^0.0.35"

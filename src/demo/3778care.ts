@@ -185,7 +185,6 @@ const PeopleSheet = new FF.Sheet(
     employee_code: FF.TextField({
       label: "Código de empregado",
       description: "Employee Code",
-      required: true,
       compute: (value) => {
         return pipe(
           value,
@@ -200,7 +199,6 @@ const PeopleSheet = new FF.Sheet(
     employee_name: FF.TextField({
       label: "Nome do empregado",
       description: "Employee Name",
-      required: true,
       compute: (value) => {
         return pipe(
           value,
