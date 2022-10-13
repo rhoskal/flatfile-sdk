@@ -28,6 +28,15 @@ const validateMaxLength =
         ]);
   };
 
+const validateDate =
+  (format: string) =>
+  (value: string): Lazy<ValidationResult<string>> =>
+  () => {
+    return datefns.isMatch(value, format)
+      ? E.right(value)
+      : E.left([new FF.Message("Invalid Date.", "error", "validate")]);
+  };
+
 /*
  * Record Hooks
  */
@@ -229,13 +238,31 @@ const PeopleSheet = new FF.Sheet(
       label: "Data de nascimento",
       description: "Date of Birth",
       required: true,
+      annotations: {
+        compute: true,
+        computeMessage: "Date was automatically formatted.",
+      },
       compute: formatDate("dd/MM/yyyy"),
+      validate: (value) => {
+        const ensureValidDate = validateDate("dd/MM/yyyy")(value);
+
+        return runValidations(ensureValidDate());
+      },
     }),
     admission_date: FF.TextField({
       label: "Data de admissão",
       description: "Admission Date",
       required: true,
+      annotations: {
+        compute: true,
+        computeMessage: "Date was automatically formatted.",
+      },
       compute: formatDate("dd/MM/yyyy"),
+      validate: (value) => {
+        const ensureValidDate = validateDate("dd/MM/yyyy")(value);
+
+        return runValidations(ensureValidDate());
+      },
     }),
     status: FF.OptionField({
       label: "Situação",
@@ -300,7 +327,7 @@ const PeopleSheet = new FF.Sheet(
   },
 );
 
-const XPortal = new FF.Portal({
+const PeoplePortal = new FF.Portal({
   name: "People (3778.care)",
   helpContent: "",
   sheet: "PeopleSheet",
@@ -309,7 +336,7 @@ const XPortal = new FF.Portal({
 const workbook = new FF.Workbook({
   name: "Workbook - 3778.care Demo",
   namespace: "3778.care",
-  portals: [XPortal],
+  portals: [PeoplePortal],
   sheets: {
     PeopleSheet,
   },
