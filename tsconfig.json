@@ -13,8 +13,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "skipLibCheck": true,
-    "strict": true,
-    "target": "es5"
+    "strict": true
   },
   "include": [
     "src"
