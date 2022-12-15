@@ -5,7 +5,9 @@ import * as E from "fp-ts/Either";
 import { Lazy, pipe } from "fp-ts/function";
 import * as Str from "fp-ts/string";
 import * as t from "io-ts";
+import * as datefns from "date-fns";
 
+import * as G from "../typeGuards";
 import { runRecordHooks, runValidations, ValidationResult } from "../utils";
 
 /*
@@ -57,20 +59,54 @@ const validateJson =
     }
   };
 
+const validateEmail =
+  (value: string): Lazy<ValidationResult<string>> =>
+  () => {
+    return value.includes("@")
+      ? E.right(value)
+      : E.left([new FF.Message("Invalid email address.", "error", "validate")]);
+  };
+
 /*
  * Record Hooks
  */
 
-const x = (record: FlatfileRecord): FlatfileRecord => {
+const dueDateNotBeforeInvoiceDate = (
+  record: FlatfileRecord,
+): FlatfileRecord => {
   return pipe(
     Ap.sequenceS(E.Apply)({
-      foo: t.number.decode(record.get("foo")),
-      bar: t.number.decode(record.get("bar")),
+      date_invoice: t.string.decode(record.get("date_invoice")),
+      date_due: t.string.decode(record.get("date_due")),
     }),
     E.match(
       () => record,
-      ({ foo, bar }) => {
-        // logic
+      ({ date_invoice, date_due }) => {
+        if (datefns.isBefore(new Date(date_due), new Date(date_invoice))) {
+          record.addError("date_due", "Cannot be before invoice date.");
+        }
+
+        return record;
+      },
+    ),
+  );
+};
+
+const balanceLTEtoAmount = (record: FlatfileRecord): FlatfileRecord => {
+  return pipe(
+    Ap.sequenceS(E.Apply)({
+      amount: t.number.decode(record.get("amount")),
+      balance: t.number.decode(record.get("balance")),
+    }),
+    E.match(
+      () => record,
+      ({ amount, balance }) => {
+        if (G.isFalsy(balance <= amount)) {
+          record.addError(
+            "balance",
+            "Remaining amount must be less than or equal to total invoice amount.",
+          );
+        }
 
         return record;
       },
@@ -98,27 +134,47 @@ const InvoicesSheet = new FF.Sheet(
     customer_name: FF.TextField({
       label: "Customer Name",
       compute: (value) => pipe(value, Str.trim),
+      validate: (value) => {
+        const ensureMaxLength = validateMaxLength(255)(value)();
+
+        return runValidations(ensureMaxLength);
+      },
     }),
     invoice_external_id: FF.TextField({
       label: "Invoice External Id",
       compute: (value) => pipe(value, Str.trim),
+      validate: (value) => {
+        const ensureMaxLength = validateMaxLength(255)(value)();
+
+        return runValidations(ensureMaxLength);
+      },
     }),
     invoice_ref: FF.TextField({
       label: "Invoice Ref",
       required: true,
       compute: (value) => pipe(value, Str.trim),
+      validate: (value) => {
+        // should be 255 but changing for the same of the demo
+        const ensureMaxLength = validateMaxLength(25)(value)();
+
+        return runValidations(ensureMaxLength);
+      },
     }),
     currency: FF.OptionField({
       label: "Currency",
       description: "3 letter ISO code of the currency",
       required: true,
       options: {
+        aud: "AUD",
         cad: "CAD",
+        eur: "EUR",
+        gbp: "GBP",
         usd: "USD",
       },
     }),
     amount: FF.NumberField({
       label: "Amount",
+      description: "Total amount on the invoice.",
       required: true,
       validate: (value) => {
         const ensureIsPositive = validatePositive(value)();
@@ -128,26 +184,41 @@ const InvoicesSheet = new FF.Sheet(
     }),
     balance: FF.NumberField({
       label: "Balance",
+      description: "Remaining amount to be paid on the invoice.",
       required: true,
-      validate: (value) => {
-        const ensureIsPositive = validatePositive(value)();
-
-        return runValidations(ensureIsPositive);
-      },
     }),
-    payment_status: FF.TextField({
+    payment_status: FF.OptionField({
       label: "Payment Status",
-      compute: (value) => pipe(value, Str.trim),
+      options: {
+        closed: "Closed",
+        dispute: "Dispute",
+        hold_back: "Hold Back",
+        installments: "Installments",
+        open: "Open",
+        paid: "Paid",
+        partially_paid: "Partially Paid",
+      },
     }),
     date_invoice: FF.TextField({
       label: "Date Invoice",
-      compute: (value) => pipe(value, Str.trim),
+      compute: (value) => {
+        try {
+          return datefns.format(new Date(value), "yyyy-MM-dd");
+        } catch (err) {
+          return value;
+        }
+      },
     }),
     date_due: FF.TextField({
       label: "Due Date",
       required: true,
-      compute: (value) => pipe(value, Str.trim),
-      validate: (value) => {}, // ensure due date is NOT before date_invoice
+      compute: (value) => {
+        try {
+          return datefns.format(new Date(value), "yyyy-MM-dd");
+        } catch (err) {
+          return value;
+        }
+      },
     }),
     first_name: FF.TextField({
       label: "First Name",
@@ -161,10 +232,20 @@ const InvoicesSheet = new FF.Sheet(
       label: "Email Address (1)",
       required: true,
       compute: (value) => pipe(value, Str.trim),
+      validate: (value) => {
+        const ensureValidEmail = validateEmail(value)();
+
+        return runValidations(ensureValidEmail);
+      },
     }),
     email_address2: FF.TextField({
       label: "Email Address (2)",
       compute: (value) => pipe(value, Str.trim),
+      validate: (value) => {
+        const ensureValidEmail = validateEmail(value)();
+
+        return runValidations(ensureValidEmail);
+      },
     }),
     phone_number_country_code: FF.NumberField({
       label: "Phone Number Country Code",
@@ -186,20 +267,28 @@ const InvoicesSheet = new FF.Sheet(
     comment: FF.TextField({
       label: "Comment",
       compute: (value) => pipe(value, Str.trim),
+      validate: (value) => {
+        const ensureMaxLength = validateMaxLength(65535)(value)();
+
+        return runValidations(ensureMaxLength);
+      },
     }),
   },
   {
     allowCustomFields: true,
     readOnly: true,
     recordCompute: (record, _session, _logger) => {
-      return runRecordHooks(x)(record);
+      return runRecordHooks(
+        dueDateNotBeforeInvoiceDate,
+        balanceLTEtoAmount,
+      )(record);
     },
     batchRecordsCompute: async (_payload, _session, _logger) => {},
   },
 );
 
 const InvoicesPortal = new FF.Portal({
-  name: "Invoice (Kolleno)",
+  name: "Invoices (Kolleno)",
   helpContent: "",
   sheet: "InvoicesSheet",
 });
