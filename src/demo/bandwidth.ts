@@ -7,7 +7,7 @@ import { Lazy } from "fp-ts/function";
 import { match } from "ts-pattern";
 
 import * as G from "../typeGuards";
-import { fold, runValidations } from "../utils";
+import { runRecordHooks, runValidations } from "../utils";
 
 /*
  * Types
@@ -355,7 +355,7 @@ const EmergencyServices = new FF.Sheet(
     allowCustomFields: false,
     readOnly: true,
     recordCompute: (record, _logger) => {
-      return fold(requiredFields)(record);
+      return runRecordHooks(requiredFields)(record);
     },
     batchRecordsCompute: async (_payload) => {},
   },

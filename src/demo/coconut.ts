@@ -10,7 +10,7 @@ import { Lazy, pipe } from "fp-ts/function";
 import * as t from "io-ts";
 
 import * as G from "../typeGuards";
-import { fold, runValidations } from "../utils";
+import { runRecordHooks, runValidations } from "../utils";
 
 const countries = new Map<string, string>([
   ["Afghanistan".toLowerCase(), "AF"],
@@ -390,7 +390,7 @@ const Leads = new FF.Sheet(
     allowCustomFields: true,
     readOnly: true,
     recordCompute: (record, _session, _logger) => {
-      return fold(emailOrPhoneRequired, zipCodeZeroPadding)(record);
+      return runRecordHooks(emailOrPhoneRequired, zipCodeZeroPadding)(record);
     },
     batchRecordsCompute: async (_payload, _session, _logger) => {},
   },

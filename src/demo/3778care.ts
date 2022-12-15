@@ -7,7 +7,7 @@ import * as Str from "fp-ts/string";
 import * as datefns from "date-fns";
 
 import * as G from "../typeGuards";
-import { fold, runValidations, ValidationResult } from "../utils";
+import { runRecordHooks, runValidations, ValidationResult } from "../utils";
 
 /*
  * Field Validations
@@ -304,7 +304,7 @@ const PeopleSheet = new FF.Sheet(
     allowCustomFields: true,
     readOnly: true,
     recordCompute: (record, _session, _logger) => {
-      return fold(
+      return runRecordHooks(
         checkForOneOrTheOther(
           { key: "unit_code", label: "Código da unidade" },
           { key: "unit_name", label: "Nome da unidade" },

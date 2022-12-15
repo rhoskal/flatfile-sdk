@@ -10,7 +10,7 @@ import { last } from "fp-ts/Semigroup";
 import * as t from "io-ts";
 import * as datefns from "date-fns";
 
-import { fold } from "../utils";
+import { runRecordHooks } from "../utils";
 
 interface ApiResponse {
   data: {
@@ -903,7 +903,7 @@ const Securities = new FF.Sheet(
     allowCustomFields: false,
     readOnly: true,
     recordCompute: (record, _logger) => {
-      return fold(compositeUniquenessCheck)(record);
+      return runRecordHooks(compositeUniquenessCheck)(record);
     },
     batchRecordsCompute: async (_payload) => {},
   },

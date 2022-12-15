@@ -9,7 +9,7 @@ import { Lazy, pipe } from "fp-ts/function";
 import * as Str from "fp-ts/string";
 import * as t from "io-ts";
 
-import { fold, runValidations, ValidationResult } from "../utils";
+import { runRecordHooks, runValidations, ValidationResult } from "../utils";
 
 /*
  * Field Validations
@@ -153,7 +153,7 @@ const BanksSheet = new FF.Sheet(
     allowCustomFields: true,
     readOnly: true,
     recordCompute: (record, _session, _logger) => {
-      return fold(checkCorrespondingRTN)(record);
+      return runRecordHooks(checkCorrespondingRTN)(record);
     },
     batchRecordsCompute: async (_payload, _session, _logger) => {},
   },
@@ -320,7 +320,7 @@ const PropertiesSheet = new FF.Sheet(
     allowCustomFields: true,
     readOnly: true,
     recordCompute: (record, _session, _logger) => {
-      return fold(balancedOwnerPercentages)(record);
+      return runRecordHooks(balancedOwnerPercentages)(record);
     },
     batchRecordsCompute: async (_payload, _session, _logger) => {},
   },

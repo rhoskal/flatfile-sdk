@@ -9,7 +9,7 @@ import * as Str from "fp-ts/string";
 import { v4 as uuidv4 } from "uuid";
 
 import * as G from "../typeGuards";
-import { fold, runValidations, ValidationResult } from "../utils";
+import { runRecordHooks, runValidations, ValidationResult } from "../utils";
 
 /*
  * Field Validations
@@ -261,7 +261,7 @@ const ReviewsSheet = new FF.Sheet(
     allowCustomFields: true,
     readOnly: true,
     recordCompute: (record, _session, _logger) => {
-      return fold(requiredFields, defaultId)(record);
+      return runRecordHooks(requiredFields, defaultId)(record);
     },
     batchRecordsCompute: async (_payload, _session, _logger) => {},
   },
@@ -374,7 +374,7 @@ const ProductsSheet = new FF.Sheet(
     allowCustomFields: true,
     readOnly: true,
     recordCompute: (record, _session, _logger) => {
-      return fold(requiredFields)(record);
+      return runRecordHooks(requiredFields)(record);
     },
     batchRecordsCompute: async (_payload, _session, _logger) => {},
   },

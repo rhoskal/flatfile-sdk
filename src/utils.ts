@@ -11,7 +11,7 @@ import { constVoid, identity, pipe } from "fp-ts/function";
  * @example
  * fold(fn1, fn2, fn3, ...)(record)
  */
-export const fold =
+export const runRecordHooks =
   (...fns: Array<(x: FlatfileRecord) => void>) =>
   (x: FlatfileRecord) =>
     fns.map((f) => f(x));

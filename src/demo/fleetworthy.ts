@@ -9,7 +9,7 @@ import * as datefns from "date-fns";
 import * as t from "io-ts";
 
 import * as G from "../typeGuards";
-import { fold, runValidations } from "../utils";
+import { runRecordHooks, runValidations } from "../utils";
 
 /*
  * Field Validations
@@ -232,7 +232,7 @@ const Assets = new FF.Sheet(
     allowCustomFields: true,
     readOnly: true,
     recordCompute: (record, _logger) => {
-      return fold(grossVehicleWeightCheck)(record);
+      return runRecordHooks(grossVehicleWeightCheck)(record);
     },
     batchRecordsCompute: async (_payload) => {},
   },
