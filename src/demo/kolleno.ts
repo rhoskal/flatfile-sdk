@@ -51,7 +51,11 @@ const validateJson =
         // JSON.parse() does not allow trailing commas
         // JSON.parse() does not allow single quotes
         return E.left([
-          new FF.Message("Not valid JSON format.", "error", "validate"),
+          new FF.Message(
+            "Cannot be parsed into valid JSON.",
+            "error",
+            "validate",
+          ),
         ]);
       } else {
         return E.left([new FF.Message("Unknown error.", "error", "validate")]);
@@ -170,6 +174,7 @@ const InvoicesSheet = new FF.Sheet(
         eur: "EUR",
         gbp: "GBP",
         usd: "USD",
+        zar: "ZAR",
       },
     }),
     amount: FF.NumberField({
@@ -203,7 +208,8 @@ const InvoicesSheet = new FF.Sheet(
       label: "Date Invoice",
       compute: (value) => {
         try {
-          return datefns.format(new Date(value), "yyyy-MM-dd");
+          const parsed = datefns.parse(value, "dd/MM/yyyy", new Date());
+          return datefns.format(parsed, "yyyy-MM-dd");
         } catch (err) {
           return value;
         }
