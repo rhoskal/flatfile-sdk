@@ -71,6 +71,16 @@ const validateEmail =
       : E.left([new FF.Message("Invalid email address.", "error", "validate")]);
   };
 
+const validatePhone =
+  (value: string): Lazy<ValidationResult<string>> =>
+  () => {
+    return /[^\d]/g.test(value)
+      ? E.left([
+          new FF.Message("Not a valid phone number.", "warn", "validate"),
+        ])
+      : E.right(value);
+  };
+
 /*
  * Record Hooks
  */
@@ -87,7 +97,7 @@ const dueDateNotBeforeInvoiceDate = (
       () => record,
       ({ date_invoice, date_due }) => {
         if (datefns.isBefore(new Date(date_due), new Date(date_invoice))) {
-          record.addError("date_due", "Cannot be before invoice date.");
+          record.addWarning("date_due", "Cannot be before invoice date.");
         }
 
         return record;
@@ -220,7 +230,8 @@ const InvoicesSheet = new FF.Sheet(
       required: true,
       compute: (value) => {
         try {
-          return datefns.format(new Date(value), "yyyy-MM-dd");
+          const parsed = datefns.parse(value, "dd/MM/yyyy", new Date());
+          return datefns.format(parsed, "yyyy-MM-dd");
         } catch (err) {
           return value;
         }
@@ -259,6 +270,11 @@ const InvoicesSheet = new FF.Sheet(
     phone_number: FF.TextField({
       label: "Phone Number",
       compute: (value) => pipe(value, Str.trim),
+      validate: (value) => {
+        const ensureValidPhone = validatePhone(value)();
+
+        return runValidations(ensureValidPhone);
+      },
     }),
     extra_data: FF.TextField({
       label: "Extra Data",
