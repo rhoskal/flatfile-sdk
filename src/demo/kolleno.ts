@@ -14,7 +14,7 @@ import { runRecordHooks, runValidations, ValidationResult } from "../utils";
  * Field Validations
  */
 
-const validateMaxLength =
+export const validateMaxLength =
   (len: number) =>
   (value: string): Lazy<ValidationResult<string>> =>
   () => {
@@ -29,7 +29,7 @@ const validateMaxLength =
         ]);
   };
 
-const validatePositive =
+export const validatePositive =
   (value: number): Lazy<ValidationResult<number>> =>
   () => {
     return value >= 0.01
@@ -39,7 +39,7 @@ const validatePositive =
         ]);
   };
 
-const validateJson =
+export const validateJson =
   (value: string): Lazy<ValidationResult<string>> =>
   () => {
     try {
@@ -63,7 +63,7 @@ const validateJson =
     }
   };
 
-const validateEmail =
+export const validateEmail =
   (value: string): Lazy<ValidationResult<string>> =>
   () => {
     return value.includes("@")
@@ -71,7 +71,7 @@ const validateEmail =
       : E.left([new FF.Message("Invalid email address.", "error", "validate")]);
   };
 
-const validatePhone =
+export const validatePhone =
   (value: string): Lazy<ValidationResult<string>> =>
   () => {
     return /[^\d]/g.test(value)

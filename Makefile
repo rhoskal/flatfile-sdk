@@ -48,12 +48,20 @@ deps: ## Install all dependencies
 
 .PHONY: format
 format: ## Format typescript files
-	yarn prettier --write 'src/**/*.ts'
+	yarn prettier --write 'src/**/*.ts' 'test/**/*'
 
 .PHONY: lint
 lint: ## Lint code
-	yarn eslint 'src/**/*.ts'
+	yarn eslint 'src/**/*.ts' 'test/**/*'
 
 .PHONY: lint
 lint-fix: ## Lint code w/ fixes
-	yarn eslint 'src/**/*.ts' --fix
+	yarn eslint 'src/**/*.ts' 'test/**/*' --fix
+
+.PHONY: test
+test: ## Test code
+	yarn jest
+
+.PHONY: test-watch
+test-watch: ## Test code
+	yarn jest --watch
