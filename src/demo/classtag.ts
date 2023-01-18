@@ -33,6 +33,21 @@ const validateEmail =
   };
 
 /*
+ * Custom, re-usable field
+ */
+
+const EmailField = FF.makeField(
+  FF.TextField({
+    compute: (value) => pipe(value, trim, removeSpaces),
+    validate: (value) => {
+      const ensureValidEmail = validateEmail(value);
+
+      return runValidations(ensureValidEmail());
+    },
+  }),
+);
+
+/*
  * Main
  */
 
@@ -77,15 +92,9 @@ const GuardiansSheet = new FF.Sheet(
         return pipe(value, trim, removeIllegalCharacters, toUppercase);
       },
     }),
-    guardian_email: FF.TextField({
+    guardian_email: EmailField({
       label: "Guardian Email",
       required: true,
-      compute: (value) => pipe(value, trim, removeSpaces),
-      validate: (value) => {
-        const ensureValidEmail = validateEmail(value);
-
-        return runValidations(ensureValidEmail());
-      },
     }),
     guardian_phone: FF.TextField({
       label: "Guardian Phone",

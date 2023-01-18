@@ -159,6 +159,20 @@ const defaultId = (record: FlatfileRecord): FlatfileRecord => {
 };
 
 /*
+ * Custom, re-usable field
+ */
+
+const UpcField = FF.makeField(
+  FF.TextField({
+    validate: (value) => {
+      const ensureUpcOrEan = validateUpcOrEan(value);
+
+      return runValidations(ensureUpcOrEan());
+    },
+  }),
+);
+
+/*
  * Main
  */
 
@@ -345,15 +359,10 @@ const ProductsSheet = new FF.Sheet(
         return runValidations(ensureMaxLength());
       },
     }),
-    upc_or_ean: FF.TextField({
+    upc_or_ean: UpcField({
       label: "UPC or EAN",
       description: "The 12-digit UPC or 13-digit EAN.",
       required: true,
-      validate: (value) => {
-        const ensureUpcOrEan = validateUpcOrEan(value);
-
-        return runValidations(ensureUpcOrEan());
-      },
     }),
     manufacturer_id: FF.TextField({
       label: "Manufacturer Id",
